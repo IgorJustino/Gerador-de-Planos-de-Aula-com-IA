@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Gerador de planos de aula personalizados usando Inteligência Artificial">
+    <title>Gerador de Planos de Aula com IA</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>🎓 Gerador de Planos de Aula com IA</h1>
+            <p class="subtitle">Crie planos de aula personalizados em segundos</p>
+        </header>
+        
+        <!-- Formulário -->
+        <div class="card">
+            <form id="formPlanoAula">
+                <div class="form-group">
+                    <label for="tema">Tema da Aula *</label>
+                    <input 
+                        type="text" 
+                        id="tema" 
+                        name="tema" 
+                        required 
+                        placeholder="Ex: Fotossíntese"
+                        autocomplete="off"
+                    >
+                </div>
+                
+                <div class="form-group">
+                    <label for="nivelEnsino">Nível de Ensino *</label>
+                    <select id="nivelEnsino" name="nivelEnsino" required>
+                        <option value="">Selecione...</option>
+                        <option value="Educação Infantil">Educação Infantil</option>
+                        <option value="Ensino Fundamental I">Ensino Fundamental I</option>
+                        <option value="Ensino Fundamental II">Ensino Fundamental II</option>
+                        <option value="Ensino Médio">Ensino Médio</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="duracao">Duração (minutos) *</label>
+                    <input 
+                        type="number" 
+                        id="duracao" 
+                        name="duracao" 
+                        required 
+                        min="10" 
+                        max="300" 
+                        placeholder="Ex: 50"
+                    >
+                </div>
+                
+                <div class="form-group">
+                    <label for="codigoBNCC">Código BNCC (opcional)</label>
+                    <input 
+                        type="text" 
+                        id="codigoBNCC" 
+                        name="codigoBNCC" 
+                        placeholder="Ex: EF05CI05"
+                        autocomplete="off"
+                    >
+                </div>
+                
+                <div class="form-group">
+                    <label for="observacoes">Observações (opcional)</label>
+                    <textarea 
+                        id="observacoes" 
+                        name="observacoes" 
+                        placeholder="Adicione informações extras sobre a turma ou necessidades específicas..."
+                    ></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    Gerar Plano de Aula
+                </button>
+            </form>
+        </div>
+        
+        <!-- Área de Resultado -->
+        <div id="resultado"></div>
+
+        <!-- Footer -->
+        <footer>
+            <p>Gerador de Planos de Aula com IA</p>
+            <p class="model-info">Powered by Google Gemini 2.5 Flash</p>
+        </footer>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="js/app.js"></script>
+</body>
+</html>

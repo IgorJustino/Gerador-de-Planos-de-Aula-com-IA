@@ -1,0 +1,362 @@
+/* ========================================
+   RESET E CONFIGURAÇÕES GLOBAIS
+   ======================================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 40px 20px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ========================================
+   CONTAINER PRINCIPAL
+   ======================================== */
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* ========================================
+   HEADER
+   ======================================== */
+
+header {
+    text-align: center;
+    margin-bottom: 40px;
+    color: white;
+}
+
+h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.subtitle {
+    font-size: 1.1rem;
+    opacity: 0.95;
+    font-weight: 400;
+}
+
+/* ========================================
+   CARDS
+   ======================================== */
+
+.card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    padding: 40px;
+    margin-bottom: 30px;
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========================================
+   FORMULÁRIO
+   ======================================== */
+
+.form-group {
+    margin-bottom: 24px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #2d3748;
+    font-size: 0.95rem;
+}
+
+input,
+select,
+textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: inherit;
+    transition: all 0.3s ease;
+    background-color: #f7fafc;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    background-color: white;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* ========================================
+   BOTÕES
+   ======================================== */
+
+.btn {
+    width: 100%;
+    padding: 14px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    margin-top: 10px;
+}
+
+.btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-primary:disabled {
+    background: #cbd5e0;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-secondary {
+    background: #f7fafc;
+    color: #4a5568;
+    border: 2px solid #e2e8f0;
+    margin-top: 15px;
+}
+
+.btn-secondary:hover {
+    background: #edf2f7;
+    border-color: #cbd5e0;
+}
+
+/* ========================================
+   RESULTADO
+   ======================================== */
+
+#resultado {
+    display: none;
+}
+
+/* ========================================
+   LOADING
+   ======================================== */
+
+.loading {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 50px;
+    height: 50px;
+    border: 4px solid #e2e8f0;
+    border-top-color: #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.loading-text {
+    font-size: 1.1rem;
+    color: #4a5568;
+    font-weight: 500;
+}
+
+/* ========================================
+   ERRO
+   ======================================== */
+
+.error {
+    background: #fff5f5;
+    border-left: 4px solid #f56565;
+    color: #c53030;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.error strong {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 1.1rem;
+}
+
+/* ========================================
+   SEÇÕES DO PLANO
+   ======================================== */
+
+.secao {
+    margin-bottom: 32px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.secao:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.secao-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.acordeao-header {
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.3s ease;
+    padding: 12px;
+    margin: -12px -12px 16px -12px;
+    border-radius: 8px;
+}
+
+.acordeao-header:hover {
+    background-color: #f7fafc;
+}
+
+.acordeao-seta {
+    margin-left: auto;
+    font-size: 1.2rem;
+    transition: transform 0.3s ease;
+    color: #667eea;
+    font-weight: bold;
+}
+
+.secao-icon {
+    font-size: 2rem;
+    line-height: 1;
+}
+
+.secao h2 {
+    color: #2d3748;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    flex: 1;
+}
+
+.secao-content {
+    line-height: 1.8;
+    color: #4a5568;
+    white-space: pre-wrap;
+    font-size: 1rem;
+    padding-left: 56px;
+}
+
+.acordeao-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease, opacity 0.3s ease, padding 0.3s ease;
+    opacity: 0;
+    padding-left: 0;
+}
+
+.acordeao-content.aberto {
+    max-height: 5000px;
+    opacity: 1;
+    padding-left: 56px;
+    margin-bottom: 16px;
+}
+
+/* ========================================
+   FOOTER
+   ======================================== */
+
+footer {
+    text-align: center;
+    color: white;
+    margin-top: 40px;
+    padding: 20px;
+    opacity: 0.9;
+}
+
+footer p {
+    margin-bottom: 8px;
+}
+
+.model-info {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+/* ========================================
+   RESPONSIVIDADE
+   ======================================== */
+
+@media (max-width: 768px) {
+    body {
+        padding: 20px 15px;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    .card {
+        padding: 24px;
+    }
+
+    .secao-content {
+        padding-left: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.75rem;
+    }
+
+    .subtitle {
+        font-size: 1rem;
+    }
+
+    .card {
+        padding: 20px;
+    }
+
+    .btn {
+        font-size: 1rem;
+        padding: 12px 20px;
+    }
+}
