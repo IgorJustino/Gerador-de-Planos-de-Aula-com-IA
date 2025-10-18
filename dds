@@ -1,0 +1,5 @@
+ total_usuarios | total_planos | total_tentativas | taxa_sucesso_geral | planos_hoje | planos_semana | tempo_medio_geracao_ms | tokens_totais 
+----------------+--------------+------------------+--------------------+-------------+---------------+------------------------+---------------
+              3 |            2 |                5 |              80.00 |           2 |             2 |                   2350 |          4278
+(1 row)
+

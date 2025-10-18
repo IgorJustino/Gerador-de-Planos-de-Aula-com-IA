@@ -23,7 +23,7 @@ async function gerarPlanoDeAula(dados) {
 
   try {
     // Escolher o modelo (pode ser configurado no .env)
-    const modelName = process.env.GEMINI_MODEL || 'gemini-1.5-pro';
+    const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash-preview-05-20';
     const model = genAI.getGenerativeModel({ model: modelName });
 
     // Construir o prompt estruturado
@@ -209,7 +209,7 @@ function extrairSecao(texto, inicioMarcador, fimMarcador) {
  */
 async function testarConexao() {
   try {
-    const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+    const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash-preview-05-20';
     const model = genAI.getGenerativeModel({ model: modelName });
     const result = await model.generateContent('Responda apenas: OK');
     const texto = result.response.text();

@@ -31,9 +31,20 @@ body {
    ======================================== */
 
 header {
-    text-align: center;
     margin-bottom: 40px;
     color: white;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.header-title {
+    text-align: center;
+    flex: 1;
 }
 
 h1 {
@@ -47,6 +58,38 @@ h1 {
     font-size: 1.1rem;
     opacity: 0.95;
     font-weight: 400;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.user-email {
+    font-size: 0.9rem;
+    opacity: 0.95;
+    font-weight: 500;
+}
+
+.btn-logout {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.btn-logout:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-1px);
 }
 
 /* ========================================
@@ -201,6 +244,25 @@ textarea {
     font-weight: 500;
 }
 
+.loading-steps {
+    margin-top: 30px;
+    text-align: left;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.loading-steps .step {
+    padding: 12px 20px;
+    margin: 8px 0;
+    background: #f7fafc;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: #718096;
+    transition: all 0.3s ease;
+    border-left: 3px solid #e2e8f0;
+}
+
 /* ========================================
    ERRO
    ======================================== */
@@ -340,6 +402,134 @@ footer p {
     .secao-content {
         padding-left: 0;
     }
+
+    .header-content {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .header-title {
+        order: 1;
+    }
+
+    .user-info {
+        order: 0;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+}
+
+/* ========================================
+   PLANOS ANTERIORES
+   ======================================== */
+
+.plano-item {
+    background: #f7fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.plano-item:hover {
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+    transform: translateY(-2px);
+}
+
+.plano-info {
+    flex: 1;
+}
+
+.plano-titulo {
+    color: #2d3748;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0 0 12px 0;
+}
+
+.plano-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.meta-tag {
+    background: white;
+    border: 1px solid #e2e8f0;
+    color: #4a5568;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.plano-data {
+    color: #a0aec0;
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+.plano-acoes {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.btn-acao {
+    padding: 8px 16px;
+    border: 2px solid;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    background: white;
+}
+
+.btn-ver {
+    color: #667eea;
+    border-color: #667eea;
+}
+
+.btn-ver:hover {
+    background: #667eea;
+    color: white;
+}
+
+.btn-deletar {
+    color: #e53e3e;
+    border-color: #feb2b2;
+}
+
+.btn-deletar:hover {
+    background: #fff5f5;
+    border-color: #e53e3e;
+}
+
+@media (max-width: 768px) {
+    .plano-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .plano-acoes {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .btn-acao {
+        flex: 1;
+    }
 }
 
 @media (max-width: 480px) {
@@ -358,5 +548,18 @@ footer p {
     .btn {
         font-size: 1rem;
         padding: 12px 20px;
+    }
+
+    .user-email {
+        font-size: 0.85rem;
+    }
+
+    .btn-logout {
+        font-size: 0.85rem;
+        padding: 6px 16px;
+    }
+
+    .acordeao-content.aberto {
+        padding-left: 0;
     }
 }

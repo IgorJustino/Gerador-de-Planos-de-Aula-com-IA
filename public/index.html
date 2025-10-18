@@ -11,6 +11,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <!-- CSS -->
     <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -18,8 +21,16 @@
     <div class="container">
         <!-- Header -->
         <header>
-            <h1>🎓 Gerador de Planos de Aula com IA</h1>
-            <p class="subtitle">Crie planos de aula personalizados em segundos</p>
+            <div class="header-content">
+                <div class="header-title">
+                    <h1>🎓 Gerador de Planos de Aula com IA</h1>
+                    <p class="subtitle">Crie planos de aula personalizados em segundos</p>
+                </div>
+                <div class="user-info">
+                    <span class="user-email" id="userEmail"></span>
+                    <button id="btnLogout" class="btn-logout">Sair</button>
+                </div>
+            </div>
         </header>
         
         <!-- Formulário -->
@@ -35,6 +46,26 @@
                         placeholder="Ex: Fotossíntese"
                         autocomplete="off"
                     >
+                </div>
+                
+                <div class="form-group">
+                    <label for="disciplina">Disciplina (opcional)</label>
+                    <select id="disciplina" name="disciplina">
+                        <option value="">Selecione...</option>
+                        <option value="Matemática">Matemática</option>
+                        <option value="Ciências">Ciências</option>
+                        <option value="História">História</option>
+                        <option value="Geografia">Geografia</option>
+                        <option value="Língua Portuguesa">Língua Portuguesa</option>
+                        <option value="Língua Inglesa">Língua Inglesa</option>
+                        <option value="Educação Física">Educação Física</option>
+                        <option value="Artes">Artes</option>
+                        <option value="Filosofia">Filosofia</option>
+                        <option value="Sociologia">Sociologia</option>
+                        <option value="Física">Física</option>
+                        <option value="Química">Química</option>
+                        <option value="Biologia">Biologia</option>
+                    </select>
                 </div>
                 
                 <div class="form-group">
@@ -89,6 +120,24 @@
         
         <!-- Área de Resultado -->
         <div id="resultado"></div>
+
+        <!-- Seção de Planos Anteriores -->
+        <div class="card" id="planosAnteriores" style="display: none;">
+            <div class="secao-header" style="margin-bottom: 20px;">
+                <span class="secao-icon">📚</span>
+                <h2 style="margin: 0;">Meus Planos de Aula</h2>
+            </div>
+            <div id="listaPlanos">
+                <p style="text-align: center; color: #718096;">Carregando...</p>
+            </div>
+        </div>
+
+        <!-- Botão para mostrar planos anteriores -->
+        <div style="text-align: center; margin: 20px 0;">
+            <button type="button" class="btn btn-secondary" id="btnMostrarPlanos" onclick="togglePlanosAnteriores()">
+                📚 Ver Meus Planos Anteriores
+            </button>
+        </div>
 
         <!-- Footer -->
         <footer>

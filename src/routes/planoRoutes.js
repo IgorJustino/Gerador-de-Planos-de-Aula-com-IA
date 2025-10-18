@@ -6,36 +6,36 @@ const express = require('express');
 const router = express.Router();
 const geminiService = require('../services/geminiService');
 const supabaseService = require('../services/supabaseService');
+const { authenticateToken } = require('../middleware/auth');
 
 // ========================================
 // POST /api/planos/gerar
 // Gera um novo plano de aula com IA
 // ========================================
-router.post('/gerar', async (req, res) => {
+router.post('/gerar', authenticateToken, async (req, res) => {
   const startTime = Date.now();
 
   try {
-    let { usuarioId, tema, nivelEnsino, duracaoMinutos, codigoBNCC, observacoes } = req.body;
-
-    // Se não houver usuarioId, usar um ID padrão (para demo sem autenticação)
-    if (!usuarioId) {
-      // Buscar o primeiro usuário disponível no banco
-      const { data: usuarios } = await require('../services/supabaseService').supabase
-        .from('usuarios')
-        .select('id')
-        .limit(1);
-      
-      if (usuarios && usuarios.length > 0) {
-        usuarioId = usuarios[0].id;
-        console.log(`ℹ️ Usando usuário padrão: ${usuarioId}`);
-      }
-    }
+    const { tema, nivelEnsino, duracaoMinutos, codigoBNCC, observacoes, disciplina } = req.body;
+    
+    // Usar o usuarioId do usuário autenticado
+    const usuarioId = req.user.id;
+    
+    console.log(`👤 Gerando plano para usuário: ${req.user.email} (ID: ${usuarioId})`);
 
     // Validação de campos obrigatórios
     if (!tema || !nivelEnsino || !duracaoMinutos) {
       return res.status(400).json({
         sucesso: false,
         erro: 'Campos obrigatórios: tema, nivelEnsino, duracaoMinutos',
+      });
+    }
+
+    // Validação de código BNCC (se fornecido)
+    if (codigoBNCC && !/^[A-Z]{2}\d{2}[A-Z]{2}\d{2}$/.test(codigoBNCC)) {
+      return res.status(400).json({
+        sucesso: false,
+        erro: 'Código BNCC inválido. Formato esperado: EF05MA01 (2 letras + 2 números + 2 letras + 2 números)',
       });
     }
 
@@ -67,14 +67,16 @@ router.post('/gerar', async (req, res) => {
 
     if (!resultadoGemini.sucesso) {
       // Registrar falha no histórico
-      await supabaseService.registrarHistorico({
-        usuarioId,
-        inputJson: { tema, nivelEnsino, duracaoMinutos, codigoBNCC, observacoes },
-        modeloUsado: process.env.GEMINI_MODEL || 'gemini-1.5-pro',
-        status: 'erro',
-        mensagemErro: resultadoGemini.erro,
-        tempoExecucaoMs: Date.now() - startTime,
-      });
+      await req.supabaseAuth
+        .from('historico_geracoes')
+        .insert([{
+          usuario_id: usuarioId,
+          input_json: { tema, nivelEnsino, duracaoMinutos, codigoBNCC, observacoes },
+          modelo_usado: process.env.GEMINI_MODEL || 'gemini-1.5-pro',
+          status: 'erro',
+          mensagem_erro: resultadoGemini.erro,
+          tempo_execucao_ms: Date.now() - startTime,
+        }]);
 
       return res.status(500).json({
         sucesso: false,
@@ -82,19 +84,54 @@ router.post('/gerar', async (req, res) => {
       });
     }
 
-    // 2️⃣ Salvar plano no Supabase
-    const resultadoSalvar = await supabaseService.salvarPlanoDeAula({
-      usuarioId,
-      tema,
-      nivelEnsino,
-      duracaoMinutos,
-      codigoBNCC,
-      observacoes,
-      ...resultadoGemini.plano,
-      modeloGeminiUsado: resultadoGemini.metadados.modeloUsado,
-      tokensUtilizados: resultadoGemini.metadados.tokensUtilizados,
-      tempoGeracaoMs: resultadoGemini.metadados.tempoGeracaoMs,
-    });
+    // 2️⃣ Salvar plano no Supabase usando o cliente autenticado
+    const { data: planoSalvo, error: erroSalvar } = await req.supabaseAuth
+      .from('planos_aula')
+      .insert([{
+        usuario_id: usuarioId,
+        tema,
+        disciplina,
+        nivel_ensino: nivelEnsino,
+        duracao_minutos: duracaoMinutos,
+        codigo_bncc: codigoBNCC,
+        observacoes,
+        introducao_ludica: resultadoGemini.plano.introducaoLudica,
+        objetivo_aprendizagem: resultadoGemini.plano.objetivoAprendizagem,
+        passo_a_passo: resultadoGemini.plano.passoAPasso,
+        rubrica_avaliacao: resultadoGemini.plano.rubricaAvaliacao,
+        modelo_gemini_usado: resultadoGemini.metadados.modeloUsado,
+        tokens_utilizados: resultadoGemini.metadados.tokensUtilizados,
+        tempo_geracao_ms: resultadoGemini.metadados.tempoGeracaoMs,
+      }])
+      .select()
+      .single();
+
+    if (erroSalvar) {
+      console.error('❌ Erro ao salvar plano:', erroSalvar);
+      
+      // Plano gerado mas não salvo (registrar no histórico mesmo assim)
+      await req.supabaseAuth
+        .from('historico_geracoes')
+        .insert([{
+          usuario_id: usuarioId,
+          input_json: { tema, nivelEnsino, duracaoMinutos, codigoBNCC, observacoes },
+          modelo_usado: resultadoGemini.metadados.modeloUsado,
+          status: 'erro',
+          mensagem_erro: `Plano gerado mas não salvo: ${erroSalvar.message}`,
+          tempo_execucao_ms: Date.now() - startTime,
+        }]);
+
+      return res.status(500).json({
+        sucesso: false,
+        erro: 'Erro ao salvar plano no banco: ' + erroSalvar.message,
+        planoGerado: resultadoGemini.plano,
+      });
+    }
+
+    const resultadoSalvar = {
+      sucesso: true,
+      plano: planoSalvo,
+    };
 
     if (!resultadoSalvar.sucesso) {
       // Plano gerado mas não salvo (registrar no histórico mesmo assim)
@@ -115,14 +152,16 @@ router.post('/gerar', async (req, res) => {
     }
 
     // 3️⃣ Registrar sucesso no histórico
-    await supabaseService.registrarHistorico({
-      usuarioId,
-      planoId: resultadoSalvar.plano.id,
-      inputJson: { tema, nivelEnsino, duracaoMinutos, codigoBNCC, observacoes },
-      modeloUsado: resultadoGemini.metadados.modeloUsado,
-      status: 'sucesso',
-      tempoExecucaoMs: Date.now() - startTime,
-    });
+    await req.supabaseAuth
+      .from('historico_geracoes')
+      .insert([{
+        usuario_id: usuarioId,
+        plano_id: resultadoSalvar.plano.id,
+        input_json: { tema, nivelEnsino, duracaoMinutos, codigoBNCC, observacoes },
+        modelo_usado: resultadoGemini.metadados.modeloUsado,
+        status: 'sucesso',
+        tempo_execucao_ms: Date.now() - startTime,
+      }]);
 
     // ✅ Sucesso total!
     console.log(`✅ Plano gerado e salvo com sucesso! (ID: ${resultadoSalvar.plano.id})`);
@@ -154,32 +193,35 @@ router.post('/gerar', async (req, res) => {
 // GET /api/planos
 // Lista planos de aula de um usuário
 // ========================================
-router.get('/', async (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
   try {
-    const { usuarioId, nivelEnsino, limite } = req.query;
+    const { nivelEnsino, limite } = req.query;
+    const usuarioId = req.user.id;
 
-    if (!usuarioId) {
-      return res.status(400).json({
-        sucesso: false,
-        erro: 'Parâmetro obrigatório: usuarioId',
-      });
+    let query = req.supabaseAuth
+      .from('planos_aula')
+      .select('*', { count: 'exact' })
+      .eq('usuario_id', usuarioId)
+      .order('created_at', { ascending: false });
+
+    if (nivelEnsino) {
+      query = query.eq('nivel_ensino', nivelEnsino);
     }
 
-    const filtros = {
-      nivelEnsino,
-      limite: limite ? parseInt(limite) : undefined,
-    };
+    if (limite) {
+      query = query.limit(parseInt(limite));
+    }
 
-    const resultado = await supabaseService.buscarPlanosDeAula(usuarioId, filtros);
+    const { data: planos, error, count } = await query;
 
-    if (!resultado.sucesso) {
-      return res.status(500).json(resultado);
+    if (error) {
+      throw error;
     }
 
     res.json({
       sucesso: true,
-      total: resultado.total,
-      planos: resultado.planos,
+      total: count,
+      planos: planos || [],
     });
   } catch (erro) {
     console.error('❌ Erro ao listar planos:', erro);
@@ -194,13 +236,18 @@ router.get('/', async (req, res) => {
 // GET /api/planos/:id
 // Busca um plano específico por ID
 // ========================================
-router.get('/:id', async (req, res) => {
+router.get('/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
 
-    const resultado = await supabaseService.buscarPlanoPorId(id);
+    const { data: plano, error } = await req.supabaseAuth
+      .from('planos_aula')
+      .select('*')
+      .eq('id', id)
+      .eq('usuario_id', req.user.id) // RLS garante isso, mas explicitamos
+      .single();
 
-    if (!resultado.sucesso) {
+    if (error || !plano) {
       return res.status(404).json({
         sucesso: false,
         erro: 'Plano não encontrado',
@@ -209,7 +256,7 @@ router.get('/:id', async (req, res) => {
 
     res.json({
       sucesso: true,
-      plano: resultado.plano,
+      plano,
     });
   } catch (erro) {
     console.error('❌ Erro ao buscar plano:', erro);
@@ -224,25 +271,27 @@ router.get('/:id', async (req, res) => {
 // DELETE /api/planos/:id
 // Deleta um plano de aula
 // ========================================
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const { usuarioId } = req.body;
 
-    if (!usuarioId) {
-      return res.status(400).json({
+    const { error } = await req.supabaseAuth
+      .from('planos_aula')
+      .delete()
+      .eq('id', id)
+      .eq('usuario_id', req.user.id); // RLS garante isso, mas explicitamos
+
+    if (error) {
+      return res.status(404).json({
         sucesso: false,
-        erro: 'Campo obrigatório: usuarioId',
+        erro: 'Plano não encontrado ou você não tem permissão para deletá-lo',
       });
     }
 
-    const resultado = await supabaseService.deletarPlano(id, usuarioId);
-
-    if (!resultado.sucesso) {
-      return res.status(404).json(resultado);
-    }
-
-    res.json(resultado);
+    res.json({
+      sucesso: true,
+      mensagem: 'Plano deletado com sucesso',
+    });
   } catch (erro) {
     console.error('❌ Erro ao deletar plano:', erro);
     res.status(500).json({
@@ -253,27 +302,29 @@ router.delete('/:id', async (req, res) => {
 });
 
 // ========================================
-// GET /api/planos/historico/:usuarioId
-// Busca histórico de gerações de um usuário
+// GET /api/planos/historico
+// Busca histórico de gerações do usuário autenticado
 // ========================================
-router.get('/historico/:usuarioId', async (req, res) => {
+router.get('/historico', authenticateToken, async (req, res) => {
   try {
-    const { usuarioId } = req.params;
     const { limite } = req.query;
+    const usuarioId = req.user.id;
 
-    const resultado = await supabaseService.buscarHistorico(
-      usuarioId,
-      limite ? parseInt(limite) : 20
-    );
+    const { data: historico, error, count } = await req.supabaseAuth
+      .from('historico_geracoes')
+      .select('*', { count: 'exact' })
+      .eq('usuario_id', usuarioId)
+      .order('created_at', { ascending: false })
+      .limit(limite ? parseInt(limite) : 20);
 
-    if (!resultado.sucesso) {
-      return res.status(500).json(resultado);
+    if (error) {
+      throw error;
     }
 
     res.json({
       sucesso: true,
-      total: resultado.total,
-      historico: resultado.historico,
+      total: count,
+      historico: historico || [],
     });
   } catch (erro) {
     console.error('❌ Erro ao buscar histórico:', erro);
