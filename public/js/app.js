@@ -4,6 +4,8 @@
 
 // URLs dinâmicas (funciona tanto local quanto em produção)
 const API_URL = `${window.location.origin}/api/planos/gerar`;
+// Base para outras rotas da API (listar, visualizar, deletar)
+const API_BASE = `${window.location.origin}/api/planos`;
 
 // Supabase Cloud (substitua pelos seus valores de produção)
 const SUPABASE_URL = 'https://anstiasaorbnvllgnvac.supabase.co';
@@ -477,7 +479,7 @@ async function carregarPlanosAnteriores() {
     listaDiv.innerHTML = '<p style="text-align: center; color: #718096;">Carregando seus planos...</p>';
     
     try {
-        const response = await fetch('http://localhost:3000/api/planos', {
+        const response = await fetch(`${API_BASE}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${authToken}`
@@ -538,7 +540,7 @@ async function carregarPlanosAnteriores() {
 
 async function visualizarPlano(planoId) {
     try {
-        const response = await fetch(`http://localhost:3000/api/planos/${planoId}`, {
+        const response = await fetch(`${API_BASE}/${planoId}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${authToken}`
@@ -634,7 +636,7 @@ async function confirmarDeletar(planoId, temaPlano) {
     if (!confirmar) return;
 
     try {
-        const response = await fetch(`http://localhost:3000/api/planos/${planoId}`, {
+        const response = await fetch(`${API_BASE}/${planoId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${authToken}`
