@@ -6,11 +6,17 @@ const { authenticateToken } = require('../middleware/auth');
 
 
 router.post('/gerar', authenticateToken, async (req, res) => {
-console.log('fui ativado')
+  // Aumentar timeout para 5 minutos (necessário para geração com IA)
+  req.setTimeout(300000); // 5 minutos
+  res.setTimeout(300000);
+  
+  console.log('🚀 POST /api/planos/gerar - Iniciado');
   const startTime = Date.now();
 
   try {
     const { tema, nivelEnsino, duracaoMinutos, codigoBNCC, observacoes, disciplina } = req.body;
+    
+    console.log('📦 Dados recebidos:', { tema, nivelEnsino, duracaoMinutos, codigoBNCC, disciplina });
     
     // Usar o usuarioId do usuário autenticado
     const usuarioId = req.user.id;
@@ -19,6 +25,7 @@ console.log('fui ativado')
 
     // Validação de campos obrigatórios
     if (!tema || !nivelEnsino || !duracaoMinutos) {
+      console.log('❌ Validação falhou - campos obrigatórios faltando');
       return res.status(400).json({
         sucesso: false,
         erro: 'Campos obrigatórios: tema, nivelEnsino, duracaoMinutos',
@@ -51,6 +58,7 @@ console.log('fui ativado')
     console.log(`📚 Gerando plano de aula sobre "${tema}" para ${nivelEnsino}...`);
 
     // 1️⃣ Gerar plano com Gemini AI
+    console.log('🤖 Chamando Gemini AI...');
     const resultadoGemini = await geminiService.gerarPlanoDeAula({
       tema,
       nivelEnsino,
@@ -58,6 +66,7 @@ console.log('fui ativado')
       codigoBNCC,
       observacoes,
     });
+    console.log('🤖 Gemini AI respondeu:', resultadoGemini.sucesso ? '✅ Sucesso' : '❌ Erro');
 
     if (!resultadoGemini.sucesso) {
       // Registrar falha no histórico
@@ -79,6 +88,7 @@ console.log('fui ativado')
     }
 
     // 2️⃣ Salvar plano no Supabase usando o cliente autenticado
+    console.log('💾 Salvando plano no Supabase...');
     const { data: planoSalvo, error: erroSalvar } = await req.supabaseAuth
       .from('planos_aula')
       .insert([{
@@ -158,7 +168,8 @@ console.log('fui ativado')
       }]);
 
     // ✅ Sucesso total!
-    console.log(`✅ Plano gerado e salvo com sucesso! (ID: ${resultadoSalvar.plano.id})`);
+    const tempoTotal = Date.now() - startTime;
+    console.log(`✅ Plano gerado e salvo com sucesso! (ID: ${resultadoSalvar.plano.id}) - Tempo total: ${tempoTotal}ms`);
 
     res.status(201).json({
       sucesso: true,
@@ -169,7 +180,7 @@ console.log('fui ativado')
       passoAPasso: resultadoGemini.plano.passoAPasso,
       rubricaAvaliacao: resultadoGemini.plano.rubricaAvaliacao,
       metadados: {
-        tempoTotalMs: Date.now() - startTime,
+        tempoTotalMs: tempoTotal,
         ...resultadoGemini.metadados,
       },
     });

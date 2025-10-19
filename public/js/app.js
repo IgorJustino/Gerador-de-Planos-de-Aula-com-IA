@@ -194,6 +194,9 @@ async function gerarPlanoDeAula(dados) {
             body: JSON.stringify(dadosComUsuario)
         });
 
+        console.log('📡 Response Status:', response.status);
+        console.log('📡 Response Headers:', response.headers);
+
         // Verificar se o token expirou
         if (response.status === 401) {
             alert('Sua sessão expirou. Faça login novamente.');
@@ -201,28 +204,41 @@ async function gerarPlanoDeAula(dados) {
             return;
         }
 
+        // Tentar ler o corpo da resposta como texto primeiro
+        const responseText = await response.text();
+        console.log('📡 Response Text:', responseText);
+
+        // Verificar se há resposta
+        if (!responseText) {
+            throw new Error('Servidor retornou resposta vazia. Possível timeout ou erro no servidor.');
+        }
+
+        // Tentar fazer parse do JSON
+        let result;
+        try {
+            result = JSON.parse(responseText);
+        } catch (parseError) {
+            console.error('❌ Erro ao fazer parse do JSON:', parseError);
+            throw new Error(`Resposta do servidor inválida: ${responseText.substring(0, 200)}`);
+        }
+
         // Verificar erro de validação
         if (response.status === 400) {
-            const errorData = await response.json();
-            throw new Error(errorData.erro || 'Dados inválidos. Verifique os campos do formulário.');
+            throw new Error(result.erro || 'Dados inválidos. Verifique os campos do formulário.');
         }
 
         // Verificar erro do servidor
         if (response.status === 500) {
-            const errorData = await response.json().catch(() => ({}));
             throw new Error(
-                errorData.erro || 'Erro no servidor ao gerar o plano. Por favor, tente novamente.'
+                result.erro || 'Erro no servidor ao gerar o plano. Por favor, tente novamente.'
             );
         }
 
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
             throw new Error(
-                errorData.erro || `Erro na API: ${response.status} - ${response.message} - ${response.statusText}`
+                result.erro || `Erro na API: ${response.status} - ${response.statusText}`
             );
         }
-
-        const result = await response.json();
         
         if (!result.sucesso) {
             throw new Error(result.erro || 'Erro ao gerar plano de aula');
