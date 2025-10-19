@@ -22,8 +22,8 @@ app.use((req, res, next) => {
 });
 
 // Rotas da API
-// A Vercel passa /api/planos/gerar como /api/planos/gerar
-// Então precisamos montar as rotas considerando o /api
+// Com rewrites, a Vercel mantém o path completo /api/planos/gerar
+// O Express precisa processar esse path completo
 app.use('/api/planos', planoRoutes);
 
 // Rota raiz da API
@@ -37,6 +37,14 @@ app.get('/api', (req, res) => {
       buscarPlano: 'GET /api/planos/:id',
       deletarPlano: 'DELETE /api/planos/:id',
     },
+  });
+});
+
+// Rota de teste sem autenticação
+app.get('/api/planos/test', (req, res) => {
+  res.json({
+    mensagem: '✅ Rota de teste funcionando!',
+    timestamp: new Date().toISOString(),
   });
 });
 
