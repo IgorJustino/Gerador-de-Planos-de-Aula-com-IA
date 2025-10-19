@@ -8,11 +8,9 @@ const geminiService = require('../services/geminiService');
 const supabaseService = require('../services/supabaseService');
 const { authenticateToken } = require('../middleware/auth');
 
-// ========================================
-// POST /api/planos/gerar
-// Gera um novo plano de aula com IA
-// ========================================
+
 router.post('/gerar', authenticateToken, async (req, res) => {
+console.log('fui ativado')
   const startTime = Date.now();
 
   try {
