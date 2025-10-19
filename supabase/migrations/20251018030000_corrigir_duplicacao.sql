@@ -1,21 +1,10 @@
--- ========================================
--- CORREÇÃO: Remover trigger duplicado e ajustar validações
--- Data: 18/10/2025
--- ========================================
-
--- ========================================
--- 1. REMOVER TRIGGER QUE DUPLICA HISTÓRICO
--- ========================================
+-- REMOVETRIGGER QUE DUPLICA HISTÓRICO
 
 DROP TRIGGER IF EXISTS trigger_log_plano_criacao ON public.planos_aula;
 DROP FUNCTION IF EXISTS log_plano_criacao();
 
 COMMENT ON TABLE public.historico_geracoes IS 
   'Log de gerações de planos. O insert é feito manualmente pelo backend após validar o sucesso.';
-
--- ========================================
--- 2. AJUSTAR VALIDAÇÕES (menos restritivas)
--- ========================================
 
 -- Substituir função de validação por versão menos restritiva
 CREATE OR REPLACE FUNCTION validar_plano_antes_insert()
@@ -55,20 +44,12 @@ $$ LANGUAGE plpgsql;
 COMMENT ON FUNCTION validar_plano_antes_insert() IS 
   'Valida dados mínimos antes de inserir plano. Requisitos flexíveis para aceitar diferentes estilos de IA.';
 
--- ========================================
--- 3. ADICIONAR ÍNDICE PARA BUSCA POR EMAIL
--- ========================================
-
 -- Melhorar performance na busca de usuário por email durante login
 CREATE INDEX IF NOT EXISTS idx_usuarios_email_lower 
   ON public.usuarios(LOWER(email));
 
 COMMENT ON INDEX idx_usuarios_email_lower IS 
   'Índice case-insensitive para busca por email (melhora login)';
-
--- ========================================
--- 4. AJUSTAR POLÍTICAS RLS PARA PERMITIR INSERT NO AUTH
--- ========================================
 
 -- Garantir que usuários podem se auto-registrar na tabela usuarios
 DROP POLICY IF EXISTS "usuarios_insert_policy" ON public.usuarios;
@@ -86,10 +67,6 @@ CREATE POLICY "usuarios_insert_policy"
 
 COMMENT ON POLICY "usuarios_insert_policy" ON public.usuarios IS 
   'Permite auto-registro de usuários autenticados ou criação inicial';
-
--- ========================================
--- FINALIZAÇÃO
--- ========================================
 
 -- Reanalyze
 ANALYZE public.planos_aula;

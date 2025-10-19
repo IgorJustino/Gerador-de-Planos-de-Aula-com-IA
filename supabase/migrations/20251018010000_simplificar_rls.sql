@@ -1,12 +1,3 @@
--- ========================================
--- CORREÇÃO FINAL: Simplificar RLS
--- ========================================
--- Esta migration simplifica as políticas RLS para funcionar corretamente
-
--- ========================================
--- 1. CRIAR FUNÇÃO HELPER PARA OBTER USUARIO_ID
--- ========================================
-
 -- Função que retorna o UUID do usuário da tabela usuarios baseado no email do JWT
 CREATE OR REPLACE FUNCTION public.get_current_user_id()
 RETURNS uuid
@@ -15,10 +6,6 @@ STABLE SECURITY DEFINER
 AS $$
   SELECT id FROM public.usuarios WHERE email = auth.jwt()->>'email' LIMIT 1;
 $$;
-
--- ========================================
--- 2. REMOVER TODAS AS POLÍTICAS ANTIGAS
--- ========================================
 
 -- Tabela usuarios
 DROP POLICY IF EXISTS "Usuários autenticados podem ler usuarios" ON public.usuarios;
@@ -35,10 +22,6 @@ DROP POLICY IF EXISTS "Usuários autenticados deletam seus planos" ON public.pla
 -- Tabela historico_geracoes
 DROP POLICY IF EXISTS "Usuários autenticados veem seu histórico" ON public.historico_geracoes;
 DROP POLICY IF EXISTS "Usuários autenticados criam histórico" ON public.historico_geracoes;
-
--- ========================================
--- 3. CRIAR POLÍTICAS SIMPLIFICADAS
--- ========================================
 
 -- USUARIOS: Leitura para todos autenticados
 CREATE POLICY "usuarios_select_policy"
@@ -103,9 +86,7 @@ CREATE POLICY "historico_insert_policy"
   TO authenticated
   WITH CHECK (usuario_id = public.get_current_user_id());
 
--- ========================================
--- 4. GARANTIR GRANTS
--- ========================================
+-- GARANTIR GRANTS
 
 GRANT EXECUTE ON FUNCTION public.get_current_user_id() TO authenticated, anon;
 
