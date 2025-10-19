@@ -140,5 +140,5 @@ npx supabase status
 
 - **Repositório GitHub:** [github.com/IgorJustino/Gerador-de-Planos](https://github.com/IgorJustino/Gerador-de-Planos)
 - **Supabase Cloud:** [anstiasaorbnvllgnvac.supabase.co](https://anstiasaorbnvllgnvac.supabase.co)
-- **Deploy (Vercel):** *https://gerador-de-planos.vercel.app/login.html*
+- **Deploy:** *https://gerador-de-planos-backend.onrender.com/login.html*
 
