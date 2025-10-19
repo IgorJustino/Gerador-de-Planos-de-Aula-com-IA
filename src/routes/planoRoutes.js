@@ -1,6 +1,3 @@
-// ========================================
-// ROTAS: Planos de Aula
-// ========================================
 
 const express = require('express');
 const router = express.Router();
@@ -8,22 +5,17 @@ const geminiService = require('../services/geminiService');
 const supabaseService = require('../services/supabaseService');
 const { authenticateToken } = require('../middleware/auth');
 
-// ========================================
-// POST /api/planos/gerar
-// Gera um novo plano de aula com IA
-// ========================================
 router.post('/gerar', authenticateToken, async (req, res) => {
   const startTime = Date.now();
 
+  console.log(`👤 Iniciando geração de plano de aula...`);
   try {
     const { tema, nivelEnsino, duracaoMinutos, codigoBNCC, observacoes, disciplina } = req.body;
     
-    // Usar o usuarioId do usuário autenticado
     const usuarioId = req.user.id;
     
     console.log(`👤 Gerando plano para usuário: ${req.user.email} (ID: ${usuarioId})`);
 
-    // Validação de campos obrigatórios
     if (!tema || !nivelEnsino || !duracaoMinutos) {
       return res.status(400).json({
         sucesso: false,
@@ -31,7 +23,6 @@ router.post('/gerar', authenticateToken, async (req, res) => {
       });
     }
 
-    // Validação de código BNCC (se fornecido)
     if (codigoBNCC && !/^[A-Z]{2}\d{2}[A-Z]{2}\d{2}$/.test(codigoBNCC)) {
       return res.status(400).json({
         sucesso: false,
@@ -39,7 +30,6 @@ router.post('/gerar', authenticateToken, async (req, res) => {
       });
     }
 
-    // Validação de nível de ensino
     const niveisValidos = [
       'Educação Infantil',
       'Ensino Fundamental I',
@@ -56,7 +46,6 @@ router.post('/gerar', authenticateToken, async (req, res) => {
 
     console.log(`📚 Gerando plano de aula sobre "${tema}" para ${nivelEnsino}...`);
 
-    // 1️⃣ Gerar plano com Gemini AI
     const resultadoGemini = await geminiService.gerarPlanoDeAula({
       tema,
       nivelEnsino,
@@ -66,7 +55,6 @@ router.post('/gerar', authenticateToken, async (req, res) => {
     });
 
     if (!resultadoGemini.sucesso) {
-      // Registrar falha no histórico
       await req.supabaseAuth
         .from('historico_geracoes')
         .insert([{
@@ -84,7 +72,6 @@ router.post('/gerar', authenticateToken, async (req, res) => {
       });
     }
 
-    // 2️⃣ Salvar plano no Supabase usando o cliente autenticado
     const { data: planoSalvo, error: erroSalvar } = await req.supabaseAuth
       .from('planos_aula')
       .insert([{
@@ -109,7 +96,6 @@ router.post('/gerar', authenticateToken, async (req, res) => {
     if (erroSalvar) {
       console.error('❌ Erro ao salvar plano:', erroSalvar);
       
-      // Plano gerado mas não salvo (registrar no histórico mesmo assim)
       await req.supabaseAuth
         .from('historico_geracoes')
         .insert([{
@@ -134,7 +120,6 @@ router.post('/gerar', authenticateToken, async (req, res) => {
     };
 
     if (!resultadoSalvar.sucesso) {
-      // Plano gerado mas não salvo (registrar no histórico mesmo assim)
       await supabaseService.registrarHistorico({
         usuarioId,
         inputJson: { tema, nivelEnsino, duracaoMinutos, codigoBNCC, observacoes },
@@ -151,7 +136,6 @@ router.post('/gerar', authenticateToken, async (req, res) => {
       });
     }
 
-    // 3️⃣ Registrar sucesso no histórico
     await req.supabaseAuth
       .from('historico_geracoes')
       .insert([{
@@ -163,7 +147,6 @@ router.post('/gerar', authenticateToken, async (req, res) => {
         tempo_execucao_ms: Date.now() - startTime,
       }]);
 
-    // ✅ Sucesso total!
     console.log(`✅ Plano gerado e salvo com sucesso! (ID: ${resultadoSalvar.plano.id})`);
 
     res.status(201).json({
@@ -189,10 +172,6 @@ router.post('/gerar', authenticateToken, async (req, res) => {
   }
 });
 
-// ========================================
-// GET /api/planos
-// Lista planos de aula de um usuário
-// ========================================
 router.get('/', authenticateToken, async (req, res) => {
   try {
     const { nivelEnsino, limite } = req.query;
@@ -232,10 +211,6 @@ router.get('/', authenticateToken, async (req, res) => {
   }
 });
 
-// ========================================
-// GET /api/planos/:id
-// Busca um plano específico por ID
-// ========================================
 router.get('/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
@@ -267,10 +242,6 @@ router.get('/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// ========================================
-// DELETE /api/planos/:id
-// Deleta um plano de aula
-// ========================================
 router.delete('/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
@@ -301,10 +272,6 @@ router.delete('/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// ========================================
-// GET /api/planos/historico
-// Busca histórico de gerações do usuário autenticado
-// ========================================
 router.get('/historico', authenticateToken, async (req, res) => {
   try {
     const { limite } = req.query;

@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Planos de Aula com IA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Added Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.95;
+            font-weight: 400;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            padding: 40px;
+            margin-bottom: 30px;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 0.95rem;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            background-color: #f7fafc;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background-color: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin-top: 10px;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #f7fafc;
+            color: #4a5568;
+            border: 2px solid #e2e8f0;
+            margin-top: 15px;
+        }
+
+        .btn-secondary:hover {
+            background: #edf2f7;
+            border-color: #cbd5e0;
+        }
+
+        #resultado {
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            border: 4px solid #e2e8f0;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 1.1rem;
+            color: #4a5568;
+            font-weight: 500;
+        }
+
+        .error {
+            background: #fff5f5;
+            border-left: 4px solid #f56565;
+            color: #c53030;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .error strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .secao {
+            margin-bottom: 32px;
+            padding-bottom: 32px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .secao:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .secao-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .secao-icon {
+            font-size: 2rem;
+            line-height: 1;
+        }
+
+        .secao h2 {
+            color: #2d3748;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .secao-content {
+            line-height: 1.8;
+            color: #4a5568;
+            white-space: pre-wrap;
+            font-size: 1rem;
+            padding-left: 56px;
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            padding: 20px;
+            opacity: 0.9;
+        }
+
+        footer p {
+            margin-bottom: 8px;
+        }
+
+        .model-info {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Added logout button styles */
+        .logout-btn {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .user-info {
+            position: absolute;
+            top: 40px;
+            right: 0;
+            color: white;
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 20px 15px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .card {
+                padding: 24px;
+            }
+
+            .secao-content {
+                padding-left: 0;
+            }
+
+            /* Mobile responsive logout button */
+            .logout-btn {
+                position: static;
+                display: block;
+                margin: 20px auto 0;
+                width: fit-content;
+            }
+
+            .user-info {
+                position: static;
+                text-align: center;
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <!-- Added logout button and user info -->
+            <button class="logout-btn" onclick="handleLogout()">🚪 Sair</button>
+            <div class="user-info" id="user-info"></div>
+            
+            <h1>🎓 Gerador de Planos de Aula com IA</h1>
+            <p class="subtitle">Crie planos de aula personalizados em segundos</p>
+        </header>
+        
+        <div class="card">
+            <form id="formPlanoAula">
+                <div class="form-group">
+                    <label for="tema">Tema da Aula *</label>
+                    <input type="text" id="tema" name="tema" required placeholder="Ex: Fotossíntese">
+                </div>
+                
+                <div class="form-group">
+                    <label for="nivelEnsino">Nível de Ensino *</label>
+                    <select id="nivelEnsino" name="nivelEnsino" required>
+                        <option value="">Selecione...</option>
+                        <option value="Educação Infantil">Educação Infantil</option>
+                        <option value="Ensino Fundamental I">Ensino Fundamental I</option>
+                        <option value="Ensino Fundamental II">Ensino Fundamental II</option>
+                        <option value="Ensino Médio">Ensino Médio</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="duracao">Duração (minutos) *</label>
+                    <input type="number" id="duracao" name="duracao" required min="10" max="300" placeholder="Ex: 50">
+                </div>
+                
+                <div class="form-group">
+                    <label for="codigoBNCC">Código BNCC (opcional)</label>
+                    <input type="text" id="codigoBNCC" name="codigoBNCC" placeholder="Ex: EF05CI05">
+                </div>
+                
+                <div class="form-group">
+                    <label for="observacoes">Observações (opcional)</label>
+                    <textarea id="observacoes" name="observacoes" placeholder="Adicione informações extras sobre a turma ou necessidades específicas..."></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Gerar Plano de Aula</button>
+            </form>
+        </div>
+        
+        <div id="resultado"></div>
+
+        <footer>
+            <p>Gerador de Planos de Aula com IA</p>
+            <p class="model-info">Powered by Google Gemini 1.5 Flash</p>
+        </footer>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let currentUser = null;
+        let authToken = null;
+
+        // Check authentication on page load
+        checkAuthentication();
+
+        async function checkAuthentication() {
+            const { data: { session } } = await supabase.auth.getSession();
+            
+            if (!session) {
+                // No session found, redirect to login
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Save user info and token
+            currentUser = session.user;
+            authToken = session.access_token;
+            
+            // Store in localStorage for backup
+            localStorage.setItem('supabase_token', authToken);
+            localStorage.setItem('user_id', currentUser.id);
+
+            // Display user info
+            document.getElementById('user-info').textContent = `Logado como: ${currentUser.email}`;
+        }
+
+        async function handleLogout() {
+            try {
+                await supabase.auth.signOut();
+                localStorage.removeItem('supabase_token');
+                localStorage.removeItem('user_id');
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('Erro ao fazer logout:', error);
+                alert('Erro ao sair. Tente novamente.');
+            }
+        }
+
+        const form = document.getElementById('formPlanoAula');
+        const resultado = document.getElementById('resultado');
+        const submitButton = form.querySelector('button[type="submit"]');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const dados = {
+                tema: document.getElementById('tema').value,
+                nivelEnsino: document.getElementById('nivelEnsino').value,
+                duracao: parseInt(document.getElementById('duracao').value),
+                codigoBNCC: document.getElementById('codigoBNCC').value || undefined,
+                observacoes: document.getElementById('observacoes').value || undefined
+            };
+
+            resultado.style.display = 'block';
+            resultado.innerHTML = `
+                <div class="card">
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        <p class="loading-text">Gerando seu plano de aula...</p>
+                    </div>
+                </div>
+            `;
+            submitButton.disabled = true;
+            submitButton.textContent = 'Gerando...';
+
+            resultado.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+            try {
+                const response = await fetch('http://localhost:3000/api/planos/gerar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(dados)
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        alert('Sessão expirada. Faça login novamente.');
+                        window.location.href = 'login.html';
+                        return;
+                    }
+                    throw new Error(`Erro na API: ${response.status}`);
+                }
+
+                const plano = await response.json();
+
+                resultado.innerHTML = `
+                    <div class="card">
+                        <div class="secao">
+                            <div class="secao-header">
+                                <span class="secao-icon">📘</span>
+                                <h2>Introdução Lúdica</h2>
+                            </div>
+                            <div class="secao-content">${plano.introducaoLudica}</div>
+                        </div>
+                        
+                        <div class="secao">
+                            <div class="secao-header">
+                                <span class="secao-icon">🎯</span>
+                                <h2>Objetivo de Aprendizagem</h2>
+                            </div>
+                            <div class="secao-content">${plano.objetivoAprendizagem}</div>
+                        </div>
+                        
+                        <div class="secao">
+                            <div class="secao-header">
+                                <span class="secao-icon">🧩</span>
+                                <h2>Passo a Passo da Atividade</h2>
+                            </div>
+                            <div class="secao-content">${plano.passoAPasso}</div>
+                        </div>
+                        
+                        <div class="secao">
+                            <div class="secao-header">
+                                <span class="secao-icon">✅</span>
+                                <h2>Rubrica de Avaliação</h2>
+                            </div>
+                            <div class="secao-content">${plano.rubricaAvaliacao}</div>
+                        </div>
+
+                        <button type="button" class="btn btn-secondary" onclick="gerarNovoPlano()">
+                            🔄 Gerar Novo Plano
+                        </button>
+                    </div>
+                `;
+
+            } catch (error) {
+                resultado.innerHTML = `
+                    <div class="card">
+                        <div class="error">
+                            <strong>❌ Erro ao gerar plano de aula</strong>
+                            <p>${error.message}</p>
+                            <p>Verifique se a API está rodando em http://localhost:3000</p>
+                        </div>
+                        <button type="button" class="btn btn-secondary" onclick="gerarNovoPlano()">
+                            🔄 Tentar Novamente
+                        </button>
+                    </div>
+                `;
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Gerar Plano de Aula';
+            }
+        });
+
+        function gerarNovoPlano() {
+            resultado.style.display = 'none';
+            resultado.innerHTML = '';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

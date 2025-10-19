@@ -1,11 +1,7 @@
-// ========================================
-// SERVIÇO: Integração com Supabase
-// ========================================
 
 const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
-// Inicializar cliente Supabase
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_ANON_KEY;
 
@@ -16,9 +12,6 @@ if (!supabaseUrl || !supabaseKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// ========================================
-// OPERAÇÕES: PLANOS DE AULA
-// ========================================
 
 /**
  * Salva um novo plano de aula no banco de dados
@@ -80,7 +73,6 @@ async function buscarPlanosDeAula(usuarioId, filtros = {}) {
       .eq('usuario_id', usuarioId)
       .order('created_at', { ascending: false });
 
-    // Aplicar filtros opcionais
     if (filtros.nivelEnsino) {
       query = query.eq('nivel_ensino', filtros.nivelEnsino);
     }
@@ -175,9 +167,6 @@ async function deletarPlano(planoId, usuarioId) {
   }
 }
 
-// ========================================
-// OPERAÇÕES: HISTÓRICO DE GERAÇÕES
-// ========================================
 
 /**
  * Registra uma tentativa de geração no histórico
@@ -251,9 +240,6 @@ async function buscarHistorico(usuarioId, limite = 20) {
   }
 }
 
-// ========================================
-// OPERAÇÕES: USUÁRIOS
-// ========================================
 
 /**
  * Busca informações de um usuário por ID
@@ -311,9 +297,6 @@ async function testarConexao() {
   }
 }
 
-// ========================================
-// EXPORTAÇÕES
-// ========================================
 
 module.exports = {
   supabase,

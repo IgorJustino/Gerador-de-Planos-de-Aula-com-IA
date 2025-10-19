@@ -1,6 +1,3 @@
-// ========================================
-// MIDDLEWARE: Autenticação JWT com Supabase
-// ========================================
 
 const { supabase } = require('../services/supabaseService');
 
@@ -11,7 +8,6 @@ const { supabase } = require('../services/supabaseService');
  */
 async function authenticateToken(req, res, next) {
   try {
-    // 1️⃣ Extrair token do header Authorization
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
@@ -22,7 +18,6 @@ async function authenticateToken(req, res, next) {
       });
     }
 
-    // 2️⃣ Verificar token com Supabase
     const { data: { user }, error } = await supabase.auth.getUser(token);
 
     if (error || !user) {
@@ -33,7 +28,6 @@ async function authenticateToken(req, res, next) {
       });
     }
 
-    // 3️⃣ Criar cliente Supabase autenticado para esta requisição
     const { createClient } = require('@supabase/supabase-js');
     const supabaseAuth = createClient(
       process.env.SUPABASE_URL,
@@ -49,7 +43,6 @@ async function authenticateToken(req, res, next) {
 
     req.supabaseAuth = supabaseAuth;
     
-    // 4️⃣ Buscar dados do usuário na tabela usuarios usando o cliente autenticado
     const { data: userData, error: userError } = await supabaseAuth
       .from('usuarios')
       .select('*')
@@ -60,7 +53,6 @@ async function authenticateToken(req, res, next) {
       console.warn('⚠️ Usuário autenticado mas não existe na tabela usuarios');
       console.warn('⚠️ Erro ao buscar:', userError);
       
-      // Criar usuário automaticamente
       const { data: newUser, error: createError } = await supabaseAuth
         .from('usuarios')
         .insert([{
@@ -111,11 +103,9 @@ async function optionalAuth(req, res, next) {
   const token = authHeader && authHeader.split(' ')[1];
 
   if (!token) {
-    // Sem token, continua sem autenticação
     return next();
   }
 
-  // Com token, tenta autenticar mas não bloqueia se falhar
   try {
     await authenticateToken(req, res, next);
   } catch (error) {

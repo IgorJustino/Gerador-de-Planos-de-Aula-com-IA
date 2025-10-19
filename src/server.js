@@ -1,6 +1,3 @@
-// ========================================
-// SERVIDOR EXPRESS - Gerador de Planos de Aula
-// ========================================
 
 const express = require('express');
 const cors = require('cors');
@@ -10,33 +7,23 @@ const planoRoutes = require('./routes/planoRoutes');
 const geminiService = require('./services/geminiService');
 const supabaseService = require('./services/supabaseService');
 
-// ========================================
-// CONFIGURAÇÃO DO SERVIDOR
-// ========================================
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const path = require('path');
 
-// Middlewares
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Servir arquivos estáticos (frontend)
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Middleware de logging
 app.use((req, res, next) => {
   console.log(`📥 ${req.method} ${req.path} - ${new Date().toISOString()}`);
   next();
 });
 
-// ========================================
-// ROTAS
-// ========================================
 
-// Rota de documentação da API (JSON)
 app.get('/api', (req, res) => {
   res.json({
     mensagem: '🎓 API Gerador de Planos de Aula com IA',
@@ -57,7 +44,6 @@ app.get('/api', (req, res) => {
   });
 });
 
-// Health check (verifica conexões com Supabase e Gemini)
 app.get('/health', async (req, res) => {
   try {
     const [supabaseStatus, geminiStatus] = await Promise.all([
@@ -90,14 +76,9 @@ app.get('/health', async (req, res) => {
   }
 });
 
-// Rotas de planos de aula
 app.use('/api/planos', planoRoutes);
 
-// ========================================
-// TRATAMENTO DE ERROS
-// ========================================
 
-// Rota não encontrada
 app.use((req, res) => {
   res.status(404).json({
     erro: 'Rota não encontrada 🔍',
@@ -106,7 +87,6 @@ app.use((req, res) => {
   });
 });
 
-// Erro global
 app.use((err, req, res, next) => {
   console.error('❌ Erro não tratado:', err);
 
@@ -117,15 +97,11 @@ app.use((err, req, res, next) => {
   });
 });
 
-// ========================================
-// INICIALIZAÇÃO DO SERVIDOR
-// ========================================
 
 async function iniciarServidor() {
   try {
     console.log('🚀 Iniciando servidor...\n');
 
-    // Verificar variáveis de ambiente
     const variaveisObrigatorias = [
       'SUPABASE_URL',
       'SUPABASE_ANON_KEY',
@@ -143,7 +119,6 @@ async function iniciarServidor() {
       process.exit(1);
     }
 
-    // Testar conexões
     console.log('🔌 Testando conexões...\n');
 
     const [supabaseStatus, geminiStatus] = await Promise.all([
@@ -163,7 +138,6 @@ async function iniciarServidor() {
       console.error('   O servidor vai iniciar, mas pode ter funcionalidades limitadas.\n');
     }
 
-    // Iniciar servidor
     app.listen(PORT, () => {
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       console.log('✅ Servidor rodando com sucesso!');
@@ -181,7 +155,6 @@ async function iniciarServidor() {
   }
 }
 
-// Tratamento de sinais de encerramento
 process.on('SIGINT', () => {
   console.log('\n\n🛑 Servidor encerrado pelo usuário (Ctrl+C)');
   process.exit(0);
@@ -192,5 +165,4 @@ process.on('SIGTERM', () => {
   process.exit(0);
 });
 
-// Iniciar!
 iniciarServidor();

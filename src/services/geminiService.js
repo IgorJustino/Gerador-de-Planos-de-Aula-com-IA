@@ -1,11 +1,7 @@
-// ========================================
-// SERVIÇO: Integração com Google Gemini AI
-// ========================================
 
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 require('dotenv').config();
 
-// Inicializar cliente Gemini
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 /**
@@ -22,14 +18,11 @@ async function gerarPlanoDeAula(dados) {
   const startTime = Date.now();
 
   try {
-    // Escolher o modelo (pode ser configurado no .env)
     const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash-preview-05-20';
     const model = genAI.getGenerativeModel({ model: modelName });
 
-    // Construir o prompt estruturado
     const prompt = construirPrompt(dados);
 
-    // Configurar parâmetros de geração
     const generationConfig = {
       temperature: 0.8,
       topK: 40,
@@ -37,7 +30,6 @@ async function gerarPlanoDeAula(dados) {
       maxOutputTokens: 4096,
     };
 
-    // Gerar conteúdo
     const result = await model.generateContent({
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
       generationConfig,
@@ -46,10 +38,8 @@ async function gerarPlanoDeAula(dados) {
     const response = result.response;
     const texto = response.text();
 
-    // Processar resposta e extrair as 4 partes
     const planoGerado = processarRespostaGemini(texto);
 
-    // Calcular métricas
     const tempoExecucao = Date.now() - startTime;
     const tokensUsados = response.usageMetadata?.totalTokenCount || 0;
 
@@ -156,7 +146,6 @@ RUBRICA DE AVALIAÇÃO
  * Processa a resposta do Gemini e extrai as 4 partes do plano
  */
 function processarRespostaGemini(texto) {
-  // Padrões para identificar cada seção
   const secoes = {
     introducaoLudica: extrairSecao(texto, 'INTRODUÇÃO LÚDICA', 'OBJETIVO DE APRENDIZAGEM'),
     objetivoAprendizagem: extrairSecao(texto, 'OBJETIVO DE APRENDIZAGEM', 'PASSO A PASSO'),
@@ -164,7 +153,6 @@ function processarRespostaGemini(texto) {
     rubricaAvaliacao: extrairSecao(texto, 'RUBRICA DE AVALIAÇÃO', null),
   };
 
-  // Validar se todas as partes foram encontradas
   const partesVazias = Object.entries(secoes).filter(([_, valor]) => !valor.trim());
 
   if (partesVazias.length > 0) {

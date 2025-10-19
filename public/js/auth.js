@@ -1,25 +1,15 @@
-// ========================================
-// CONFIGURAÇÃO SUPABASE
-// ========================================
 
-// Supabase Cloud (substitua pelos seus valores de produção)
-const SUPABASE_URL = 'https://anstiasaorbnvllgnvac.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFuc3RpYXNhb3JibnZsbGdudmFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA3ODY5MjcsImV4cCI6MjA3NjM2MjkyN30.rBcXFZT8G924D-OSXlykClOCPKONTJeCe7V7UTz945g';
+const SUPABASE_URL = 'http://127.0.0.1:54321';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0';
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// ========================================
-// INICIALIZAÇÃO
-// ========================================
 
 document.addEventListener('DOMContentLoaded', () => {
     checkAuth();
     setupEventListeners();
 });
 
-// ========================================
-// VERIFICAR AUTENTICAÇÃO
-// ========================================
 
 async function checkAuth() {
     try {
@@ -40,40 +30,27 @@ async function checkAuth() {
     }
 }
 
-// ========================================
-// EVENT LISTENERS
-// ========================================
 
 function setupEventListeners() {
-    // Tabs
     document.querySelectorAll('.tab').forEach(tab => {
         tab.addEventListener('click', () => switchTab(tab.dataset.tab));
     });
 
-    // Forms
     document.getElementById('login-form-element').addEventListener('submit', handleLogin);
     document.getElementById('register-form-element').addEventListener('submit', handleRegister);
 }
 
-// ========================================
-// ALTERNÂNCIA DE ABAS
-// ========================================
 
 function switchTab(tabName) {
-    // Atualizar tabs
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelector(`.tab[data-tab="${tabName}"]`).classList.add('active');
 
-    // Atualizar forms
     document.querySelectorAll('.form-content').forEach(f => f.classList.remove('active'));
     document.getElementById(`${tabName}-form`).classList.add('active');
 
     hideMessage();
 }
 
-// ========================================
-// MENSAGENS
-// ========================================
 
 function showMessage(text, type) {
     const messageEl = document.getElementById('message');
@@ -87,9 +64,6 @@ function hideMessage() {
     messageEl.style.display = 'none';
 }
 
-// ========================================
-// LOADING STATE
-// ========================================
 
 function setLoading(button, isLoading, originalText) {
     if (isLoading) {
@@ -101,9 +75,6 @@ function setLoading(button, isLoading, originalText) {
     }
 }
 
-// ========================================
-// LOGIN
-// ========================================
 
 async function handleLogin(event) {
     event.preventDefault();
@@ -118,7 +89,6 @@ async function handleLogin(event) {
     try {
         console.log('🔐 Tentando fazer login com:', email);
         
-        // 1. Autenticar no Supabase
         const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
             email,
             password
@@ -132,7 +102,6 @@ async function handleLogin(event) {
         console.log('📋 Token:', authData.session.access_token.substring(0, 20) + '...');
         console.log('📋 User ID (auth):', authData.user.id);
 
-        // 2. Criar cliente autenticado com o token
         const supabaseAuth = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
             global: {
                 headers: {
@@ -143,7 +112,6 @@ async function handleLogin(event) {
 
         console.log('🔍 Buscando dados do usuário na tabela usuarios...');
 
-        // 3. Buscar dados do usuário na tabela usuarios usando cliente autenticado
         let { data: userData, error: userError } = await supabaseAuth
             .from('usuarios')
             .select('*')
@@ -155,7 +123,6 @@ async function handleLogin(event) {
         if (userError) {
             console.warn('⚠️ Usuário não encontrado na tabela usuarios, criando...');
             
-            // Criar usuário na tabela
             const { data: newUser, error: createError } = await supabaseAuth
                 .from('usuarios')
                 .insert([
@@ -177,7 +144,6 @@ async function handleLogin(event) {
 
         console.log('✅ Dados do usuário obtidos:', userData);
 
-        // 4. Salvar dados no localStorage (usar o ID da tabela usuarios, não do auth)
         localStorage.setItem('supabase_token', authData.session.access_token);
         localStorage.setItem('user_id', userData.id); // ID da tabela usuarios
         localStorage.setItem('user_email', authData.user.email);
@@ -215,9 +181,6 @@ async function handleLogin(event) {
     }
 }
 
-// ========================================
-// REGISTRO
-// ========================================
 
 async function handleRegister(event) {
     event.preventDefault();
@@ -229,7 +192,6 @@ async function handleRegister(event) {
     const passwordConfirm = document.getElementById('register-password-confirm').value;
     const button = event.target.querySelector('.submit-btn');
 
-    // Validações
     if (password !== passwordConfirm) {
         showMessage('As senhas não coincidem', 'error');
         return;
@@ -245,7 +207,6 @@ async function handleRegister(event) {
     try {
         console.log('📝 Tentando criar conta com:', { name, email });
         
-        // 1. Criar conta no Supabase Auth
         const { data: authData, error: authError } = await supabase.auth.signUp({
             email,
             password,
@@ -262,7 +223,6 @@ async function handleRegister(event) {
 
         console.log('✅ Conta criada no Auth, criando registro na tabela usuarios...');
 
-        // 2. Criar usuário na tabela usuarios
         const { data: userData, error: userError } = await supabase
             .from('usuarios')
             .insert([
@@ -283,13 +243,11 @@ async function handleRegister(event) {
         console.log('✅ Registro completo!');
         showMessage('Conta criada com sucesso! Você pode fazer login agora.', 'success');
         
-        // Limpar formulário
         document.getElementById('register-name').value = '';
         document.getElementById('register-email').value = '';
         document.getElementById('register-password').value = '';
         document.getElementById('register-password-confirm').value = '';
 
-        // Mudar para aba de login após 2 segundos
         setTimeout(() => {
             switchTab('login');
             document.getElementById('login-email').value = email;
@@ -321,9 +279,6 @@ async function handleRegister(event) {
     }
 }
 
-// ========================================
-// UTILITÁRIOS
-// ========================================
 
 console.log('🔐 Sistema de autenticação carregado');
 console.log('🔗 Supabase URL:', SUPABASE_URL);
