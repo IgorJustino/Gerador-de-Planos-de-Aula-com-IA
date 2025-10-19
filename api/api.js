@@ -30,7 +30,7 @@ app.use((req, res, next) => {
 // ROTAS
 
 // Rota principal da API
-app.get('/api', (req, res) => {
+app.get('/', (req, res) => {
   res.json({
     mensagem: '🎓 API Gerador de Planos de Aula com IA',
     versao: '1.0.0',
@@ -51,7 +51,7 @@ app.get('/api', (req, res) => {
 });
 
 // Health check
-app.get('/api/health', async (req, res) => {
+app.get('/health', async (req, res) => {
   try {
     const [supabaseStatus, geminiStatus] = await Promise.all([
       supabaseService.testarConexao(),
@@ -83,18 +83,8 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
-// Rotas de planos de aula
-app.use('/api/planos', planoRoutes);
-
-// Rota para servir login.html
-app.get('/login', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/login.html'));
-});
-
-// Rota para servir index.html
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/index.html'));
-});
+// Rotas de planos de aula (SEM o prefixo /api porque o vercel.json já faz isso)
+app.use('/planos', planoRoutes);
 
 // TRATAMENTO DE ERROS
 
