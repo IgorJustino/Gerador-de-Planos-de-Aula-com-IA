@@ -1,2 +1,5 @@
-// Arquivo principal para Vercel apontar para api/index.js
-module.exports = require('./api/index.js');
+// Arquivo principal para Vercel - Serverless Function Handler
+const app = require('./api/index.js');
+
+// Vercel precisa de uma função handler
+module.exports = app;
