@@ -1,6 +1,4 @@
-// ========================================
 // SERVIDOR EXPRESS - Gerador de Planos de Aula
-// ========================================
 
 const express = require('express');
 const cors = require('cors');
@@ -10,9 +8,8 @@ const planoRoutes = require('./routes/planoRoutes');
 const geminiService = require('./services/geminiService');
 const supabaseService = require('./services/supabaseService');
 
-// ========================================
 // CONFIGURAÇÃO DO SERVIDOR
-// ========================================
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -31,10 +28,7 @@ app.use((req, res, next) => {
   console.log(`📥 ${req.method} ${req.path} - ${new Date().toISOString()}`);
   next();
 });
-
-// ========================================
 // ROTAS
-// ========================================
 
 // Rota de documentação da API (JSON)
 app.get('/api', (req, res) => {
@@ -93,9 +87,7 @@ app.get('/health', async (req, res) => {
 // Rotas de planos de aula
 app.use('/api/planos', planoRoutes);
 
-// ========================================
 // TRATAMENTO DE ERROS
-// ========================================
 
 // Rota não encontrada
 app.use((req, res) => {
@@ -117,9 +109,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-// ========================================
 // INICIALIZAÇÃO DO SERVIDOR
-// ========================================
 
 async function iniciarServidor() {
   try {
