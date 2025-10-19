@@ -6,21 +6,28 @@ const planoRoutes = require('../src/routes/planoRoutes');
 const app = express();
 
 // Middlewares
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Log de requisições
 app.use((req, res, next) => {
-  console.log(`📥 ${req.method} ${req.path}`);
+  console.log(`📥 ${req.method} ${req.url} | Path: ${req.path}`);
   next();
 });
 
-// Rotas da API (sem prefixo /api porque vercel.json já faz isso)
-app.use('/planos', planoRoutes);
+// Rotas da API
+// A Vercel passa /api/planos/gerar como /api/planos/gerar
+// Então precisamos montar as rotas considerando o /api
+app.use('/api/planos', planoRoutes);
 
 // Rota raiz da API
-app.get('/', (req, res) => {
+app.get('/api', (req, res) => {
   res.json({
     mensagem: '🎓 API Gerador de Planos de Aula',
     status: 'online ✅',
@@ -30,6 +37,18 @@ app.get('/', (req, res) => {
       buscarPlano: 'GET /api/planos/:id',
       deletarPlano: 'DELETE /api/planos/:id',
     },
+  });
+});
+
+// Rota catch-all para debug
+app.all('*', (req, res) => {
+  console.log(`⚠️ Rota não encontrada: ${req.method} ${req.url}`);
+  res.status(404).json({
+    erro: 'Rota não encontrada',
+    metodo: req.method,
+    url: req.url,
+    path: req.path,
+    dica: 'Verifique se você está usando o endpoint correto: POST /api/planos/gerar',
   });
 });
 
