@@ -5,8 +5,16 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 require('dotenv').config();
 
+// Validar se a chave da API existe
+if (!process.env.GEMINI_API_KEY) {
+  console.error('❌ ERRO CRÍTICO: GEMINI_API_KEY não configurada!');
+  console.error('💡 Configure a variável de ambiente GEMINI_API_KEY no Render.');
+  throw new Error('GEMINI_API_KEY não configurada nas variáveis de ambiente');
+}
+
 // Inicializar cliente Gemini
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+console.log('✅ Google Gemini AI inicializado com sucesso');
 
 /**
  * Gera um plano de aula completo usando Google Gemini
@@ -22,12 +30,17 @@ async function gerarPlanoDeAula(dados) {
   const startTime = Date.now();
 
   try {
+    console.log('🤖 [Gemini] Iniciando geração do plano...');
+    
     // Escolher o modelo (pode ser configurado no .env)
     const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash-preview-05-20';
+    console.log(`🤖 [Gemini] Usando modelo: ${modelName}`);
+    
     const model = genAI.getGenerativeModel({ model: modelName });
 
     // Construir o prompt estruturado
     const prompt = construirPrompt(dados);
+    console.log('🤖 [Gemini] Prompt construído, enviando requisição...');
 
     // Configurar parâmetros de geração
     const generationConfig = {
@@ -38,10 +51,12 @@ async function gerarPlanoDeAula(dados) {
     };
 
     // Gerar conteúdo
+    console.log('🤖 [Gemini] Aguardando resposta da API...');
     const result = await model.generateContent({
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
       generationConfig,
     });
+    console.log('🤖 [Gemini] Resposta recebida!');
 
     const response = result.response;
     const texto = response.text();
@@ -65,13 +80,27 @@ async function gerarPlanoDeAula(dados) {
   } catch (erro) {
     const tempoExecucao = Date.now() - startTime;
 
-    console.error('❌ Erro ao gerar plano com Gemini:', erro.message);
+    console.error('❌ [Gemini] Erro ao gerar plano:', erro);
+    console.error('❌ [Gemini] Mensagem:', erro.message);
+    console.error('❌ [Gemini] Stack:', erro.stack);
+    
+    // Mensagens de erro mais específicas
+    let mensagemErro = erro.message;
+    
+    if (erro.message?.includes('API key')) {
+      mensagemErro = 'Chave da API Gemini inválida ou não configurada. Verifique GEMINI_API_KEY nas variáveis de ambiente.';
+    } else if (erro.message?.includes('quota')) {
+      mensagemErro = 'Cota da API Gemini excedida. Aguarde alguns minutos e tente novamente.';
+    } else if (erro.message?.includes('timeout') || erro.message?.includes('ETIMEDOUT')) {
+      mensagemErro = 'Timeout ao conectar com a API Gemini. Tente novamente.';
+    }
 
     return {
       sucesso: false,
-      erro: erro.message,
+      erro: mensagemErro,
       metadados: {
         tempoGeracaoMs: tempoExecucao,
+        erroOriginal: erro.message,
       },
     };
   }
