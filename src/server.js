@@ -75,11 +75,18 @@ app.get('/health', async (req, res) => {
           mensagem: geminiStatus.mensagem,
         },
       },
+      variaveisAmbiente: {
+        GEMINI_API_KEY: process.env.GEMINI_API_KEY ? '✅ Configurada' : '❌ NÃO configurada',
+        SUPABASE_URL: process.env.SUPABASE_URL ? '✅ Configurada' : '❌ NÃO configurada',
+        SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY ? '✅ Configurada' : '❌ NÃO configurada',
+        NODE_ENV: process.env.NODE_ENV || 'N/A',
+      },
     });
   } catch (erro) {
     res.status(503).json({
       status: 'unhealthy ❌',
       erro: erro.message,
+      stack: process.env.NODE_ENV === 'development' ? erro.stack : undefined,
     });
   }
 });
