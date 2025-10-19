@@ -1,43 +1,36 @@
-# ========================================
+
 # DEPENDÊNCIAS
-# ========================================
+
 node_modules/
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
 
-# ========================================
 # VARIÁVEIS DE AMBIENTE (SENSÍVEL!)
-# ========================================
+
 .env
 .env.local
 .env.production
 .env.development
 
-# ========================================
 # LOGS
-# ========================================
+
 logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# ========================================
 # SUPABASE LOCAL
-# ========================================
 .branches/
 .temp/
 
-# ========================================
 # SISTEMA OPERACIONAL
-# ========================================
 .DS_Store
 Thumbs.db
 
-# ========================================
 # EDITORES / IDEs
-# ========================================
+
 .vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json
@@ -46,16 +39,13 @@ Thumbs.db
 *.swo
 *~
 
-# ========================================
 # ARQUIVOS TEMPORÁRIOS
-# ========================================
 *.tmp
 *.bak
 *.cache
 
-# ========================================
 # BUILD / DIST
-# ========================================
+
 dist/
 build/
 out/

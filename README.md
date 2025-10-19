@@ -1,6 +1,15 @@
 # Gerador de Planos de Aula com IA
 
+![Gerador de planos](docs/assets/geradordeplanos.png)
+
 **O projeto consiste em um sistema capaz de gerar planos de aula personalizados utilizando Inteligência Artificial (Google Gemini), armazenando os resultados no Supabase e alinhando o conteúdo à Base Nacional Comum Curricular (BNCC). O objetivo é apoiar professores no processo de planejamento pedagógico, fornecendo planos estruturados contendo introdução lúdica, objetivos educacionais, roteiros de atividade e rubricas de avaliação.**
+
+**Plano gerado: exibe o resultado da IA dividido em seções — introdução lúdica, objetivo de aprendizagem, passo a passo da atividade e rubrica de avaliação — conforme o retorno estruturado do modelo Gemini**
+![Gerador de planos](docs/assets/pag2.png)
+
+**Histórico de planos: mostra os planos de aula já criados pelo usuário, armazenados no Supabase, com opções para visualizar ou deletar. Essa funcionalidade garante organização e fácil acesso aos planos anteriores.**
+
+![planos anteriores](docs/assets/telafinal.png)
 
 ### Backend
 - **Node.js** - Runtime JavaScript
@@ -21,6 +30,19 @@
 
 ### IA
 - **Google Gemini 2.5 Flash** - Geração de conteúdo
+
+### Modelo de IA Utilizado
+
+Após análise da documentação do Google AI Studio, foi selecionado o modelo:
+
+**gemini-2.5-flash-preview-05-20**
+
+Motivos da escolha:
+
+- Baixa latência e alta velocidade de resposta
+- Excelente para prompts estruturados e JSON
+- Treinado em contexto educacional e linguagem natural
+- Ideal para respostas textuais criativas, como introduções lúdicas e roteiros de aula
 
 ##  Como Instalar / Rodar
 
@@ -120,6 +142,3 @@ npx supabase status
 - **Supabase Cloud:** [anstiasaorbnvllgnvac.supabase.co](https://anstiasaorbnvllgnvac.supabase.co)
 - **Deploy (Vercel):** *https://gerador-de-planos.vercel.app/login.html*
 
-## 📄 Licença
-
-MIT

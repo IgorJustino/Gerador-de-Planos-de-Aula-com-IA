@@ -1,15 +1,27 @@
+// ========================================
+// CONFIGURAÇÕES
+// ========================================
 
-const API_URL = 'http://localhost:3000/api/planos/gerar';
+// URLs dinâmicas (funciona tanto local quanto em produção)
+const API_URL = `${window.location.origin}/api/planos/gerar`;
+// Base para outras rotas da API (listar, visualizar, deletar)
+const API_BASE = `${window.location.origin}/api/planos`;
 
-const SUPABASE_URL = 'http://127.0.0.1:54321';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0';
+// Supabase Cloud (substitua pelos seus valores de produção)
+const SUPABASE_URL = 'https://anstiasaorbnvllgnvac.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFuc3RpYXNhb3JibnZsbGdudmFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA3ODY5MjcsImV4cCI6MjA3NjM2MjkyN30.rBcXFZT8G924D-OSXlykClOCPKONTJeCe7V7UTz945g';
 
+// Inicializar Supabase
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// Variáveis de autenticação
 let authToken = null;
 let userId = null;
 let userEmail = null;
 
+// ========================================
+// ELEMENTOS DO DOM
+// ========================================
 
 const form = document.getElementById('formPlanoAula');
 const resultado = document.getElementById('resultado');
@@ -17,10 +29,16 @@ const submitButton = form.querySelector('button[type="submit"]');
 const userEmailElement = document.getElementById('userEmail');
 const btnLogout = document.getElementById('btnLogout');
 
+// ========================================
+// EVENT LISTENERS
+// ========================================
 
 form.addEventListener('submit', handleSubmit);
 btnLogout.addEventListener('click', handleLogout);
 
+// ========================================
+// AUTENTICAÇÃO
+// ========================================
 
 async function checkAuthentication() {
     try {
@@ -44,6 +62,7 @@ async function checkAuthentication() {
         console.log('📋 Email:', userEmail);
         console.log('📋 Token:', authToken.substring(0, 20) + '...');
 
+        // Buscar o ID do usuário na tabela usuarios (não o auth.users.id)
         const { data: userData, error: userError } = await supabase
             .from('usuarios')
             .select('id')
@@ -54,6 +73,7 @@ async function checkAuthentication() {
 
         if (userError || !userData) {
             console.warn('⚠️ Erro ao buscar dados do usuário:', userError);
+            // Se não encontrar o usuário na tabela, criar um
             const { data: newUser, error: createError } = await supabase
                 .from('usuarios')
                 .insert([{
@@ -79,6 +99,7 @@ async function checkAuthentication() {
             userId = userData.id;
         }
 
+        // Atualizar UI com email do usuário
         if (userEmailElement) {
             userEmailElement.textContent = userEmail;
         }
@@ -101,10 +122,12 @@ async function handleLogout() {
             throw error;
         }
 
+        // Limpar dados locais
         authToken = null;
         userId = null;
         userEmail = null;
 
+        // Redirecionar para login
         window.location.href = 'login.html';
     } catch (error) {
         console.error('Erro ao fazer logout:', error);
@@ -112,6 +135,9 @@ async function handleLogout() {
     }
 }
 
+// ========================================
+// FUNÇÃO PRINCIPAL: SUBMIT DO FORMULÁRIO
+// ========================================
 
 async function handleSubmit(e) {
     e.preventDefault();
@@ -132,6 +158,9 @@ async function handleSubmit(e) {
     }
 }
 
+// ========================================
+// FUNÇÕES DE COLETA DE DADOS
+// ========================================
 
 function coletarDadosFormulario() {
     return {
@@ -144,9 +173,13 @@ function coletarDadosFormulario() {
     };
 }
 
+// ========================================
+// FUNÇÕES DE API
+// ========================================
 
 async function gerarPlanoDeAula(dados) {
     try {
+        // Adicionar userId aos dados
         const dadosComUsuario = {
             ...dados,
             usuarioId: userId
@@ -161,17 +194,20 @@ async function gerarPlanoDeAula(dados) {
             body: JSON.stringify(dadosComUsuario)
         });
 
+        // Verificar se o token expirou
         if (response.status === 401) {
             alert('Sua sessão expirou. Faça login novamente.');
             window.location.href = 'login.html';
             return;
         }
 
+        // Verificar erro de validação
         if (response.status === 400) {
             const errorData = await response.json();
             throw new Error(errorData.erro || 'Dados inválidos. Verifique os campos do formulário.');
         }
 
+        // Verificar erro do servidor
         if (response.status === 500) {
             const errorData = await response.json().catch(() => ({}));
             throw new Error(
@@ -192,6 +228,7 @@ async function gerarPlanoDeAula(dados) {
             throw new Error(result.erro || 'Erro ao gerar plano de aula');
         }
 
+        // A API retorna as seções diretas, não dentro de result.plano
         return {
             introducaoLudica: result.introducaoLudica,
             objetivoAprendizagem: result.objetivoAprendizagem,
@@ -208,6 +245,9 @@ async function gerarPlanoDeAula(dados) {
     }
 }
 
+// ========================================
+// FUNÇÕES DE UI - LOADING
+// ========================================
 
 function mostrarLoading() {
     resultado.style.display = 'block';
@@ -229,6 +269,7 @@ function mostrarLoading() {
         </div>
     `;
     
+    // Animação de progresso
     setTimeout(() => updateLoadingStep(1, '✓ Dados validados'), 500);
     setTimeout(() => updateLoadingStep(2, '⏳ Conectando com Gemini AI...'), 1000);
 }
@@ -254,6 +295,9 @@ function updateLoadingStep(stepNumber, message) {
     }
 }
 
+// ========================================
+// FUNÇÕES DE UI - PLANO GERADO
+// ========================================
 
 function mostrarPlano(plano) {
     resultado.innerHTML = `
@@ -301,6 +345,9 @@ function mostrarPlano(plano) {
     `;
 }
 
+// ========================================
+// FUNÇÃO DE ACORDEÃO
+// ========================================
 
 function toggleSecao(header) {
     const content = header.nextElementSibling;
@@ -315,6 +362,9 @@ function toggleSecao(header) {
     }
 }
 
+// ========================================
+// FUNÇÕES DE UI - ERRO
+// ========================================
 
 function mostrarErro(error) {
     resultado.innerHTML = `
@@ -332,6 +382,9 @@ function mostrarErro(error) {
     console.error('Erro ao gerar plano:', error);
 }
 
+// ========================================
+// FUNÇÕES DE CONTROLE DE BOTÃO
+// ========================================
 
 function desabilitarBotao() {
     submitButton.disabled = true;
@@ -343,6 +396,9 @@ function habilitarBotao() {
     submitButton.textContent = 'Gerar Plano de Aula';
 }
 
+// ========================================
+// FUNÇÕES AUXILIARES
+// ========================================
 
 function scrollParaResultado() {
     setTimeout(() => {
@@ -368,7 +424,11 @@ function gerarNovoPlano() {
     });
 }
 
+// ========================================
+// VALIDAÇÕES ADICIONAIS
+// ========================================
 
+// Validação em tempo real da duração
 document.getElementById('duracao').addEventListener('input', (e) => {
     const valor = parseInt(e.target.value);
     if (valor < 10) {
@@ -380,6 +440,7 @@ document.getElementById('duracao').addEventListener('input', (e) => {
     }
 });
 
+// Formatação e validação automática do código BNCC
 document.getElementById('codigoBNCC').addEventListener('input', (e) => {
     e.target.value = e.target.value.toUpperCase();
 });
@@ -395,6 +456,9 @@ document.getElementById('codigoBNCC').addEventListener('blur', (e) => {
     }
 });
 
+// ========================================
+// PLANOS ANTERIORES
+// ========================================
 
 async function togglePlanosAnteriores() {
     const planosDiv = document.getElementById('planosAnteriores');
@@ -415,7 +479,7 @@ async function carregarPlanosAnteriores() {
     listaDiv.innerHTML = '<p style="text-align: center; color: #718096;">Carregando seus planos...</p>';
     
     try {
-        const response = await fetch('http://localhost:3000/api/planos', {
+        const response = await fetch(`${API_BASE}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${authToken}`
@@ -439,6 +503,7 @@ async function carregarPlanosAnteriores() {
             return;
         }
 
+        // Renderizar lista de planos
         listaDiv.innerHTML = result.planos.map(plano => `
             <div class="plano-item" onclick="visualizarPlano(${plano.id})">
                 <div class="plano-info">
@@ -475,7 +540,7 @@ async function carregarPlanosAnteriores() {
 
 async function visualizarPlano(planoId) {
     try {
-        const response = await fetch(`http://localhost:3000/api/planos/${planoId}`, {
+        const response = await fetch(`${API_BASE}/${planoId}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${authToken}`
@@ -494,6 +559,7 @@ async function visualizarPlano(planoId) {
 
         const plano = result.plano;
 
+        // Mostrar o plano no resultado
         resultado.style.display = 'block';
         resultado.innerHTML = `
             <div class="card">
@@ -555,6 +621,7 @@ async function visualizarPlano(planoId) {
             </div>
         `;
 
+        // Scroll para o resultado
         scrollParaResultado();
 
     } catch (error) {
@@ -569,7 +636,7 @@ async function confirmarDeletar(planoId, temaPlano) {
     if (!confirmar) return;
 
     try {
-        const response = await fetch(`http://localhost:3000/api/planos/${planoId}`, {
+        const response = await fetch(`${API_BASE}/${planoId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${authToken}`
@@ -588,8 +655,10 @@ async function confirmarDeletar(planoId, temaPlano) {
 
         alert('✅ Plano deletado com sucesso!');
         
+        // Recarregar lista de planos
         await carregarPlanosAnteriores();
         
+        // Limpar área de resultado se estava mostrando o plano deletado
         if (resultado.style.display === 'block') {
             gerarNovoPlano();
         }
@@ -611,7 +680,11 @@ function formatarData(dataISO) {
     });
 }
 
+// ========================================
+// INICIALIZAÇÃO
+// ========================================
 
+// Verificar autenticação ao carregar a página
 document.addEventListener('DOMContentLoaded', async () => {
     const isAuthenticated = await checkAuthentication();
     

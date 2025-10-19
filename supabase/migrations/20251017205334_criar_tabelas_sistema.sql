@@ -1,8 +1,6 @@
--- ========================================
--- TABELA: usuarios
--- Armazena informações dos usuários do sistema
--- Integração com Supabase Auth (sem senha local)
--- ========================================
+
+-- TABELA: usuarios e Armazena informações dos usuários do sistema. Integração com Supabase Auth (sem senha local)
+
 create table if not exists public.usuarios (
   id uuid primary key default gen_random_uuid(),
   nome text not null,
@@ -15,10 +13,10 @@ create table if not exists public.usuarios (
 -- Índice para busca rápida por email
 create index if not exists idx_usuarios_email on public.usuarios(email);
 
--- ========================================
+
 -- TABELA: planos_aula
 -- Armazena os planos de aula gerados pela IA
--- ========================================
+
 create table if not exists public.planos_aula (
   id bigint primary key generated always as identity,
   usuario_id uuid references public.usuarios(id) on delete cascade,
@@ -36,7 +34,7 @@ create table if not exists public.planos_aula (
   codigo_bncc text check (codigo_bncc ~ '^[A-Z]{2}\d{2}[A-Z]{2}\d{2}$'),
   observacoes text,
   
-  -- Conteúdo gerado pela IA (Gemini)
+  -- Conteúdo gerado pela Gemini
   introducao_ludica text not null,
   objetivo_aprendizagem text not null,
   passo_a_passo text not null,
@@ -55,10 +53,8 @@ create index idx_planos_usuario_id on public.planos_aula(usuario_id);
 create index idx_planos_created_at on public.planos_aula(created_at desc);
 create index idx_planos_nivel_ensino on public.planos_aula(nivel_ensino);
 
--- ========================================
 -- TABELA: historico_geracoes
 -- Log de todas as tentativas de geração (sucesso ou erro)
--- ========================================
 create table if not exists public.historico_geracoes (
   id bigint primary key generated always as identity,
   usuario_id uuid references public.usuarios(id) on delete cascade,
@@ -76,13 +72,9 @@ create table if not exists public.historico_geracoes (
   created_at timestamptz default now()
 );
 
--- Índice para análise de histórico
+-- Índice nálise de histórico
 create index idx_historico_usuario_id on public.historico_geracoes(usuario_id);
 create index idx_historico_status on public.historico_geracoes(status);
-
--- ========================================
--- FUNÇÕES E TRIGGERS
--- ========================================
 
 -- Função para atualizar o campo updated_at automaticamente
 create or replace function update_updated_at_column()
@@ -93,21 +85,19 @@ begin
 end;
 $$ language plpgsql;
 
--- Trigger para tabela usuarios
+-- Trigger tabela usuarios
 create trigger update_usuarios_updated_at
   before update on public.usuarios
   for each row
   execute function update_updated_at_column();
 
--- Trigger para tabela planos_aula
+-- Trigger tabela planos_aula
 create trigger update_planos_updated_at
   before update on public.planos_aula
   for each row
   execute function update_updated_at_column();
 
--- ========================================
 -- POLÍTICAS RLS (Row Level Security)
--- ========================================
 
 -- Habilitar RLS nas tabelas
 alter table public.usuarios enable row level security;
