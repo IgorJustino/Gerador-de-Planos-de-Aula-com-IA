@@ -1,13 +1,3 @@
--- ========================================
--- OTIMIZAÇÕES DE PERFORMANCE E FUNCIONALIDADES
--- Data: 18/10/2025
--- Descrição: Índices adicionais, triggers úteis, views e melhorias
--- ========================================
-
--- ========================================
--- 1. ÍNDICES ADICIONAIS PARA PERFORMANCE
--- ========================================
-
 -- Índice composto para buscas por usuário + data (muito comum)
 CREATE INDEX IF NOT EXISTS idx_planos_usuario_created 
   ON public.planos_aula(usuario_id, created_at DESC);
@@ -33,10 +23,6 @@ CREATE INDEX IF NOT EXISTS idx_historico_created_at
 -- Índice composto para análise de sucesso/erro por usuário
 CREATE INDEX IF NOT EXISTS idx_historico_usuario_status 
   ON public.historico_geracoes(usuario_id, status, created_at DESC);
-
--- ========================================
--- 2. TRIGGERS ÚTEIS
--- ========================================
 
 -- Trigger: Registrar automaticamente no histórico ao criar plano
 CREATE OR REPLACE FUNCTION log_plano_criacao()
@@ -139,9 +125,7 @@ CREATE TRIGGER trigger_validar_plano
   FOR EACH ROW
   EXECUTE FUNCTION validar_plano_antes_insert();
 
--- ========================================
--- 3. VIEWS ÚTEIS
--- ========================================
+-- VIEWS ÚTEIS
 
 -- View: Estatísticas por usuário
 CREATE OR REPLACE VIEW public.v_estatisticas_usuario AS
@@ -231,10 +215,6 @@ FROM public.planos_aula
 GROUP BY nivel_ensino
 ORDER BY quantidade_planos DESC;
 
--- ========================================
--- 4. FUNÇÕES ÚTEIS
--- ========================================
-
 -- Função: Buscar planos por texto (full-text search)
 CREATE OR REPLACE FUNCTION public.buscar_planos(termo TEXT)
 RETURNS TABLE (
@@ -313,10 +293,7 @@ BEGIN
   RETURN linhas_deletadas;
 END;
 $$ LANGUAGE plpgsql;
-
--- ========================================
--- 5. GRANTS PARA AS VIEWS E FUNÇÕES
--- ========================================
+-- GRANTS PARA AS VIEWS E FUNÇÕES
 
 GRANT SELECT ON public.v_estatisticas_usuario TO authenticated;
 GRANT SELECT ON public.v_planos_recentes TO authenticated;
@@ -327,10 +304,6 @@ GRANT SELECT ON public.v_distribuicao_nivel_ensino TO authenticated;
 GRANT EXECUTE ON FUNCTION public.buscar_planos(TEXT) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.estatisticas_sistema() TO authenticated;
 GRANT EXECUTE ON FUNCTION public.limpar_historico_antigo(INTEGER) TO authenticated;
-
--- ========================================
--- 6. COMENTÁRIOS DE DOCUMENTAÇÃO
--- ========================================
 
 COMMENT ON VIEW public.v_estatisticas_usuario IS 
   'Estatísticas agregadas por usuário: total de planos, disciplinas, tempo médio, etc.';
@@ -356,20 +329,6 @@ COMMENT ON FUNCTION public.estatisticas_sistema() IS
 COMMENT ON FUNCTION public.limpar_historico_antigo(INTEGER) IS 
   'Limpa registros de histórico bem-sucedidos mais antigos que X dias (padrão: 90)';
 
--- ========================================
--- 7. CONSTRAINT ADICIONAL
--- ========================================
-
--- Garantir que não existam planos duplicados (mesmo tema + usuário + data próxima)
--- Comentado por padrão, descomente se quiser evitar duplicatas
--- CREATE UNIQUE INDEX idx_planos_unique_tema_usuario_data
---   ON public.planos_aula(usuario_id, tema, DATE(created_at));
-
--- ========================================
--- FINALIZAÇÃO
--- ========================================
-
--- Análise das tabelas para otimizar o query planner
 ANALYZE public.usuarios;
 ANALYZE public.planos_aula;
 ANALYZE public.historico_geracoes;
