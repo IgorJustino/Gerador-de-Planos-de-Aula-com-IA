@@ -108,7 +108,7 @@ NODE_ENV=development
 2. Vá em Project Settings → API
 3. Copie a URL e a `anon` key
 
-## 📝 Comandos Básicos
+## Comandos Básicos
 
 ```bash
 # Instalar dependências
@@ -135,6 +135,28 @@ npx supabase db push
 # Ver logs do Supabase
 npx supabase status
 ```
+
+
+## Decisões Técnicas Tomadas
+
+- **Uso do Supabase:** escolhido por integrar autenticação, banco de dados PostgreSQL e API REST automática em um único ambiente, simplificando o backend.  
+- **Gemini Flash 2.5:** modelo de IA escolhido por equilibrar velocidade e qualidade textual, essencial para respostas educativas estruturadas.  
+- **Vanilla JS no frontend:** decisão voltada para simplicidade e leveza, eliminando dependências complexas de frameworks.  
+- **Arquitetura RESTful:** facilita manutenção e escalabilidade, separando claramente as rotas e a camada de IA.  
+- **Armazenamento local e remoto:** permite rodar o projeto tanto com Supabase local (para testes) quanto na nuvem.  
+
+---
+
+## Desafios Encontrados e Soluções
+
+| **Desafio** | **Solução Implementada** |
+|--------------|--------------------------|
+| Integração entre IA e Supabase | Implementação de camada intermediária no backend para formatar e validar o JSON retornado pelo Gemini antes de salvar no banco. |
+| Retorno inconsistente do modelo | Criação de *prompt* estruturado com instruções fixas e campos delimitados para garantir a consistência das respostas. |
+| Problemas de autenticação local | Uso do Supabase Auth com fallback local e documentação detalhada no `.env`. |
+| Lentidão inicial no carregamento | Implementação de cache leve no frontend e carregamento assíncrono das listas de planos. |
+| Conflitos de ambiente (local vs. produção) | Separação clara de variáveis em `.env` e script de inicialização para detectar automaticamente o modo de execução. |
+
 
 ## 🌐 Links do Projeto
 
