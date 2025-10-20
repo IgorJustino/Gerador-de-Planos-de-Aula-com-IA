@@ -1,18 +1,13 @@
-// ========================================
-// SERVIÇO: Integração com Google Gemini AI
-// ========================================
-
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 require('dotenv').config();
 
-// Validar se a chave da API existe
 if (!process.env.GEMINI_API_KEY) {
   console.error('❌ ERRO CRÍTICO: GEMINI_API_KEY não configurada!');
   console.error('💡 Configure a variável de ambiente GEMINI_API_KEY no Render.');
   throw new Error('GEMINI_API_KEY não configurada nas variáveis de ambiente');
 }
 
-// Inicializar cliente Gemini
+// cliente
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 console.log('✅ Google Gemini AI inicializado com sucesso');
 
@@ -61,10 +56,8 @@ async function gerarPlanoDeAula(dados) {
     const response = result.response;
     const texto = response.text();
 
-    // Processar resposta e extrair as 4 partes
     const planoGerado = processarRespostaGemini(texto);
 
-    // Calcular métricas
     const tempoExecucao = Date.now() - startTime;
     const tokensUsados = response.usageMetadata?.totalTokenCount || 0;
 

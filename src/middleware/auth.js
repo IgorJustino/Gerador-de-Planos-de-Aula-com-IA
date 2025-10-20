@@ -1,17 +1,8 @@
-// ========================================
-// MIDDLEWARE: Autenticação JWT com Supabase
-// ========================================
-
 const { supabase } = require('../services/supabaseService');
 
-/**
- * Middleware para verificar e autenticar o token JWT
- * O token é extraído do header Authorization
- * O Supabase Client é configurado para usar esse token
- */
 async function authenticateToken(req, res, next) {
   try {
-    // 1️⃣ Extrair token do header Authorization
+    //  Extrair token do header Authorization
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
@@ -22,7 +13,7 @@ async function authenticateToken(req, res, next) {
       });
     }
 
-    // 2️⃣ Verificar token com Supabase
+    // Verificar token com Supabase
     const { data: { user }, error } = await supabase.auth.getUser(token);
 
     if (error || !user) {
@@ -33,7 +24,7 @@ async function authenticateToken(req, res, next) {
       });
     }
 
-    // 3️⃣ Criar cliente Supabase autenticado para esta requisição
+    //Criar cliente Supabase autenticado para esta requisição
     const { createClient } = require('@supabase/supabase-js');
     const supabaseAuth = createClient(
       process.env.SUPABASE_URL,
@@ -49,7 +40,7 @@ async function authenticateToken(req, res, next) {
 
     req.supabaseAuth = supabaseAuth;
     
-    // 4️⃣ Buscar dados do usuário na tabela usuarios usando o cliente autenticado
+    // Buscar dados do usuário na tabela usuarios usando o cliente autenticado
     const { data: userData, error: userError } = await supabaseAuth
       .from('usuarios')
       .select('*')
@@ -102,10 +93,6 @@ async function authenticateToken(req, res, next) {
   }
 }
 
-/**
- * Middleware opcional - permite requisições sem autenticação
- * mas configura o contexto se o token estiver presente
- */
 async function optionalAuth(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -119,7 +106,7 @@ async function optionalAuth(req, res, next) {
   try {
     await authenticateToken(req, res, next);
   } catch (error) {
-    console.warn('⚠️ Erro ao autenticar token opcional:', error);
+    console.warn(' Erro ao autenticar token opcional:', error);
     next();
   }
 }

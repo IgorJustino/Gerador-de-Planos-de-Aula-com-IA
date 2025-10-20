@@ -1,25 +1,13 @@
-// ========================================
-// CONFIGURAÇÃO SUPABASE
-// ========================================
-
 // Supabase Cloud (substitua pelos seus valores de produção)
 const SUPABASE_URL = 'https://anstiasaorbnvllgnvac.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFuc3RpYXNhb3JibnZsbGdudmFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA3ODY5MjcsImV4cCI6MjA3NjM2MjkyN30.rBcXFZT8G924D-OSXlykClOCPKONTJeCe7V7UTz945g';
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// ========================================
-// INICIALIZAÇÃO
-// ========================================
-
 document.addEventListener('DOMContentLoaded', () => {
     checkAuth();
     setupEventListeners();
 });
-
-// ========================================
-// VERIFICAR AUTENTICAÇÃO
-// ========================================
 
 async function checkAuth() {
     try {
@@ -40,10 +28,6 @@ async function checkAuth() {
     }
 }
 
-// ========================================
-// EVENT LISTENERS
-// ========================================
-
 function setupEventListeners() {
     // Tabs
     document.querySelectorAll('.tab').forEach(tab => {
@@ -54,10 +38,6 @@ function setupEventListeners() {
     document.getElementById('login-form-element').addEventListener('submit', handleLogin);
     document.getElementById('register-form-element').addEventListener('submit', handleRegister);
 }
-
-// ========================================
-// ALTERNÂNCIA DE ABAS
-// ========================================
 
 function switchTab(tabName) {
     // Atualizar tabs
@@ -71,10 +51,6 @@ function switchTab(tabName) {
     hideMessage();
 }
 
-// ========================================
-// MENSAGENS
-// ========================================
-
 function showMessage(text, type) {
     const messageEl = document.getElementById('message');
     messageEl.textContent = text;
@@ -87,10 +63,6 @@ function hideMessage() {
     messageEl.style.display = 'none';
 }
 
-// ========================================
-// LOADING STATE
-// ========================================
-
 function setLoading(button, isLoading, originalText) {
     if (isLoading) {
         button.disabled = true;
@@ -100,10 +72,6 @@ function setLoading(button, isLoading, originalText) {
         button.textContent = originalText;
     }
 }
-
-// ========================================
-// LOGIN
-// ========================================
 
 async function handleLogin(event) {
     event.preventDefault();
@@ -215,10 +183,6 @@ async function handleLogin(event) {
     }
 }
 
-// ========================================
-// REGISTRO
-// ========================================
-
 async function handleRegister(event) {
     event.preventDefault();
     hideMessage();
@@ -320,10 +284,6 @@ async function handleRegister(event) {
         setLoading(button, false, 'Criar Conta');
     }
 }
-
-// ========================================
-// UTILITÁRIOS
-// ========================================
 
 console.log('🔐 Sistema de autenticação carregado');
 console.log('🔗 Supabase URL:', SUPABASE_URL);

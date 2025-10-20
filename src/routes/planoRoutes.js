@@ -155,7 +155,7 @@ router.post('/gerar', authenticateToken, async (req, res) => {
       });
     }
 
-    // 3️⃣ Registrar sucesso no histórico
+    // Registrar sucesso no histórico
     await req.supabaseAuth
       .from('historico_geracoes')
       .insert([{
@@ -167,7 +167,6 @@ router.post('/gerar', authenticateToken, async (req, res) => {
         tempo_execucao_ms: Date.now() - startTime,
       }]);
 
-    // ✅ Sucesso total!
     const tempoTotal = Date.now() - startTime;
     console.log(`✅ Plano gerado e salvo com sucesso! (ID: ${resultadoSalvar.plano.id}) - Tempo total: ${tempoTotal}ms`);
 
@@ -194,10 +193,6 @@ router.post('/gerar', authenticateToken, async (req, res) => {
   }
 });
 
-// ========================================
-// GET /api/planos
-// Lista planos de aula de um usuário
-// ========================================
 router.get('/', authenticateToken, async (req, res) => {
   try {
     const { nivelEnsino, limite } = req.query;
@@ -237,10 +232,6 @@ router.get('/', authenticateToken, async (req, res) => {
   }
 });
 
-// ========================================
-// GET /api/planos/:id
-// Busca um plano específico por ID
-// ========================================
 router.get('/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
@@ -272,10 +263,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// ========================================
-// DELETE /api/planos/:id
-// Deleta um plano de aula
-// ========================================
+
 router.delete('/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
@@ -306,10 +294,6 @@ router.delete('/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// ========================================
-// GET /api/planos/historico
-// Busca histórico de gerações do usuário autenticado
-// ========================================
 router.get('/historico', authenticateToken, async (req, res) => {
   try {
     const { limite } = req.query;

@@ -1,7 +1,3 @@
-/* ========================================
-   RESET E CONFIGURAÇÕES GLOBAIS
-   ======================================== */
-
 * {
     margin: 0;
     padding: 0;
@@ -17,18 +13,10 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
-/* ========================================
-   CONTAINER PRINCIPAL
-   ======================================== */
-
 .container {
     max-width: 900px;
     margin: 0 auto;
 }
-
-/* ========================================
-   HEADER
-   ======================================== */
 
 header {
     margin-bottom: 40px;

@@ -1,7 +1,3 @@
-// ========================================
-// SERVIÇO: Integração com Supabase
-// ========================================
-
 const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
@@ -15,10 +11,6 @@ if (!supabaseUrl || !supabaseKey) {
 }
 
 const supabase = createClient(supabaseUrl, supabaseKey);
-
-// ========================================
-// OPERAÇÕES: PLANOS DE AULA
-// ========================================
 
 /**
  * Salva um novo plano de aula no banco de dados
@@ -175,10 +167,6 @@ async function deletarPlano(planoId, usuarioId) {
   }
 }
 
-// ========================================
-// OPERAÇÕES: HISTÓRICO DE GERAÇÕES
-// ========================================
-
 /**
  * Registra uma tentativa de geração no histórico
  * @param {Object} dados - Dados da geração
@@ -310,10 +298,6 @@ async function testarConexao() {
     };
   }
 }
-
-// ========================================
-// EXPORTAÇÕES
-// ========================================
 
 module.exports = {
   supabase,
